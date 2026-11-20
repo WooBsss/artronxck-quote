@@ -8,6 +8,11 @@ Thai-language website that prices CNC machined parts in Thai Baht (฿).
 - Editable shop parameters and material library (saved in the browser)
 - Light / dark theme switch, printable PDF quote with logo (and a random CNC meme)
 
+## Live website (phone or any device)
+
+**https://woobsss.github.io/artronxck-quote/** — hosted free on GitHub Pages and updated automatically
+about a minute after each push to `main`.
+
 ## Open from the desktop
 
 Double-click **Artron CNC Quote** on the Windows desktop. It runs `open-website.ps1`, which starts the

@@ -701,6 +701,10 @@ function sampleFile() {
  * ------------------------------------------------------------------ */
 function bind() {
   const dz = $('#dropzone');
+  // iPhone/iPad Safari greys out CAD files when `accept` lists extensions it doesn't know,
+  // so let iOS users pick any file (unsupported types are still rejected in parseFile)
+  const isIOS = /iP(hone|ad|od)/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  if (isIOS) $('#fileInput').removeAttribute('accept');
   $('#fileInput').addEventListener('change', (e) => { handleFiles(e.target.files); e.target.value = ''; });
   ['dragenter', 'dragover'].forEach((t) => dz.addEventListener(t, (e) => { e.preventDefault(); dz.classList.add('drag'); }));
   ['dragleave', 'drop'].forEach((t) => dz.addEventListener(t, (e) => { e.preventDefault(); dz.classList.remove('drag'); }));
