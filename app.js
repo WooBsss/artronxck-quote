@@ -584,40 +584,13 @@ function orderTotals() {
 }
 
 /* ------------------------------------------------------------------ *
- *  Quote number + a random machinist meme (just for fun)
+ *  Quote number (shown in the printed / PDF header)
  * ------------------------------------------------------------------ */
 const QUOTE_NO = (() => {
   const d = new Date();
   const p = (n) => String(n).padStart(2, '0');
   return `เลขที่ Q${String(d.getFullYear()).slice(2)}${p(d.getMonth() + 1)}${p(d.getDate())}-${Math.floor(1000 + Math.random() * 9000)}`;
 })();
-
-const MEMES = [
-  { art: '🧐', top: 'ลูกค้า: ขอ tolerance ±0.001 mm', bottom: 'งบ: เท่าข้าวมันไก่ 1 จาน' },
-  { art: '⏳', top: 'CAM บอกใช้เวลา 5 นาที', bottom: 'ความจริง: 3 ชั่วโมงครึ่ง' },
-  { art: '💀', top: 'ดอกเอ็นมิล 3,000 บาท', bottom: 'หักตอนพาสสุดท้ายพอดี' },
-  { art: '📱', top: 'ลูกค้า: งานไม่ด่วนครับ', bottom: '5 นาทีต่อมา: ได้ของยังครับ?' },
-  { art: '🖼️', top: 'ลูกค้าส่งแบบมาเป็น .jpg', bottom: 'แล้วถามว่าทำไมยังไม่ได้ราคา' },
-  { art: '🛑', top: 'กด Cycle Start ครั้งแรก', bottom: 'อีกมือวางบน E-Stop ตลอด' },
-  { art: '⚡', top: 'ค่าไฟเดือนนี้', bottom: 'แพงกว่าค่าวัตถุดิบอีก' },
-  { art: '🔧', top: 'ผม: วัดสองครั้ง ตัดครั้งเดียว', bottom: 'เครื่อง: ชนครั้งเดียว ซ่อมสองอาทิตย์' },
-  { art: '🌀', top: 'กัดอะลูมิเนียมวันเดียว', bottom: 'เศษเต็มห้อง ยกเว้นในถังขยะ' },
-  { art: '😅', top: 'ใบเสนอราคาคำนวณด้วยคอมพิวเตอร์', bottom: 'แต่กำไรยังต้องลุ้นเหมือนเดิม' },
-  { art: '🙏', top: 'ตั้งศูนย์ชิ้นงานเสร็จ', bottom: 'ไหว้เครื่องก่อนกดรัน 1 ที' },
-  { art: '📏', top: 'เวอร์เนียร์บอก 10.00', bottom: 'ไมโครมิเตอร์บอก 9.98 · เชื่อใครดี?' },
-];
-let memeIdx = -1;
-function showRandomMeme() {
-  let i;
-  do { i = Math.floor(Math.random() * MEMES.length); } while (MEMES.length > 1 && i === memeIdx);
-  memeIdx = i;
-  const m = MEMES[i];
-  $('#memeTop').textContent = m.top;
-  $('#memeBottom').textContent = m.bottom;
-  const art = $('#memeArt');
-  art.textContent = m.art;
-  art.classList.remove('pop'); void art.offsetWidth; art.classList.add('pop');
-}
 
 function renderSummary() {
   const t = orderTotals();
@@ -796,9 +769,7 @@ function bind() {
     renderMaterials(); matChanged();
   });
 
-  $('#printBtn').addEventListener('click', () => window.print());
-  $('#memeBtn').addEventListener('click', showRandomMeme);
-}
+  $('#printBtn').addEventListener('click', () => window.print());}
 
 /* ------------------------------------------------------------------ */
 $('#tolerance').innerHTML = TOLERANCES.map((t) => `<option value="${t.id}">${t.name}</option>`).join('');
@@ -807,7 +778,6 @@ renderMaterialOptions();
 renderParams();
 renderMaterials();
 renderSummary();
-showRandomMeme();
 bind();
 
 // Phones and in-app browsers (Instagram, LINE, …) keep a saved copy of the page for a while.

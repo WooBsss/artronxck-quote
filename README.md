@@ -6,7 +6,7 @@ Thai-language website that prices CNC machined parts in Thai Baht (฿).
 - Pick a material: weight = volume × density
 - Price is built from material, machine depreciation and maintenance, electricity (kW × ฿/kWh), labour, tool wear, setup, surface finish, overhead, profit and VAT 7%
 - Editable shop parameters and material library (saved in the browser)
-- Light / dark theme switch, printable PDF quote with logo (and a random CNC meme)
+- Light / dark theme switch, printable PDF quote with logo and quote number
 
 ## Live website (phone or any device)
 
