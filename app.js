@@ -810,5 +810,24 @@ renderSummary();
 showRandomMeme();
 bind();
 
+// Phones and in-app browsers (Instagram, LINE, …) keep a saved copy of the page for a while.
+// If a newer version is online, reload into it once — before the user has started a quote.
+(async () => {
+  const cur = document.querySelector('meta[name="app-version"]')?.content;
+  if (!cur || !/^https?:$/.test(location.protocol)) return;
+  try {
+    const res = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    const { v } = await res.json();
+    if (!v || v === cur || parts.length) return;
+    const key = 'cncq.reloadedFor';
+    if (sessionStorage.getItem(key) === v) return; // already tried once: avoid reload loops
+    sessionStorage.setItem(key, v);
+    const u = new URL(location.href);
+    u.searchParams.set('v', v);
+    location.replace(u.toString());
+  } catch { /* offline or storage blocked: keep the current page */ }
+})();
+
 // exposed for debugging / automated checks
 window.cncQuote = { handleFiles, parts, quote, shop: () => shop };

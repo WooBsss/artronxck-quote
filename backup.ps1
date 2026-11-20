@@ -18,6 +18,23 @@ if (-not $remote) { Say 'GitHub backup skipped: no GitHub remote (origin) set ye
 & $git diff --cached --quiet
 $hasChanges = $LASTEXITCODE -ne 0
 
+# New version stamp so phones download fresh files instead of a saved (cached) copy:
+# index.html loads styles.css?v=…, theme.js?v=…, app.js?v=…, and version.json tells
+# already-open pages that a newer version exists.
+if ($hasChanges) {
+  $index = Join-Path $PSScriptRoot 'index.html'
+  if (Test-Path $index) {
+    $ver = Get-Date -Format 'yyyyMMddHHmmss'
+    $utf8 = New-Object System.Text.UTF8Encoding($false)
+    $html = [IO.File]::ReadAllText($index)
+    $html = [regex]::Replace($html, '((?:href|src)="(?:styles\.css|app\.js|theme\.js))(?:\?v=[^"]*)?"', "`$1?v=$ver`"")
+    $html = [regex]::Replace($html, '(<meta name="app-version" content=")[^"]*(")', "`${1}$ver`$2")
+    [IO.File]::WriteAllText($index, $html, $utf8)
+    [IO.File]::WriteAllText((Join-Path $PSScriptRoot 'version.json'), "{`"v`":`"$ver`"}`n", $utf8)
+    & $git add -A 2>&1 | Out-Null
+  }
+}
+
 if ($hasChanges) {
   $count = (& $git diff --cached --name-only | Measure-Object -Line).Lines
   $stamp = Get-Date -Format 'yyyy-MM-dd HH:mm'
