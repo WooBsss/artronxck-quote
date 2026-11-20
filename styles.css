@@ -282,6 +282,48 @@ select:focus, input:focus { outline: 2px solid var(--accent); outline-offset: -1
   .topnav { display: none; }
   .topbar-inner { justify-content: space-between; }
 }
+/* Phones: material library becomes one card per material (table is too narrow to read) */
+@media (max-width: 640px) {
+  .mat-table thead { display: none; }
+  .mat-table, .mat-table tbody { display: block; }
+  .mat-table tr {
+    display: grid; grid-template-columns: 36px 1fr 1fr 36px; gap: 10px 10px; align-items: end;
+    background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin-bottom: 10px;
+  }
+  .mat-table td { display: block; padding: 0; border: 0; min-width: 0; }
+  .mat-table td[data-label]::before {
+    content: attr(data-label); display: block; font-size: .74rem; color: var(--muted); margin-bottom: 4px; line-height: 1.3;
+  }
+  .mat-table .c-color { grid-row: 1; grid-column: 1; align-self: center; }
+  .mat-table .c-name { grid-row: 1; grid-column: 2 / 4; }
+  .mat-table .c-name input { font-weight: 600; }
+  .mat-table .c-del { grid-row: 1; grid-column: 4; align-self: center; text-align: center; }
+  .mat-table .c-group { grid-column: 1 / -1; }
+  .mat-table .c-density, .mat-table .c-mrr { grid-column: 1 / 3; }
+  .mat-table .c-price, .mat-table .c-wear { grid-column: 3 / -1; }
+  .mat-table td.num input { max-width: none; width: 100%; }
+  .mat-table .del { font-size: 1.15rem; padding: 6px; }
+
+  /* quote summary: one card per part, totals as label / amount lines */
+  .summary-table thead { display: none; }
+  .summary-table, .summary-table tbody, .summary-table tfoot { display: block; }
+  .summary-table tbody tr {
+    display: block; background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px;
+    padding: 10px 12px; margin-bottom: 10px;
+  }
+  .summary-table tbody td { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border: 0; text-align: right; }
+  .summary-table tbody td[data-label]::before { content: attr(data-label); color: var(--muted); font-family: "IBM Plex Sans Thai", sans-serif; font-size: .82rem; text-align: left; flex-shrink: 0; }
+  .summary-table .s-idx { display: none; }
+  .summary-table .s-part { display: block; text-align: left; font-weight: 700; padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px dashed var(--line); overflow-wrap: anywhere; }
+  .summary-table .s-mat { display: block; text-align: left; }
+  .summary-table .s-mat::before { display: block; margin-bottom: 2px; }
+  .summary-table .s-amount { font-weight: 700; }
+  .summary-table tfoot tr { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+  .summary-table tfoot td { border: 0; padding: 6px 0; }
+  .summary-table tfoot tr.grand td { border-top: 0; }
+  .summary-table tfoot tr.grand { border-top: 2px solid var(--ink); margin-top: 4px; padding-top: 4px; }
+}
+
 @media (max-width: 480px) {
   .brand-sub { display: none; }
   .currency-pill { font-size: .72rem; padding: 4px 10px; }

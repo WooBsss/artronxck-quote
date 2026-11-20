@@ -629,13 +629,13 @@ function renderSummary() {
     return;
   }
   const body = t.lines.map(({ p, q }, i) => `<tr>
-      <td>${i + 1}</td>
-      <td>${esc(p.name)}</td>
-      <td>${esc(q.m.name)}<br><span class="muted">${esc(q.fin.name)} · ${esc(q.tol.name)}</span></td>
-      <td class="n">${weight(q.partKg)}</td>
-      <td class="n">${q.qty}</td>
-      <td class="n">${baht(q.unit)}</td>
-      <td class="n">${baht(q.line)}</td>
+      <td class="s-idx">${i + 1}</td>
+      <td class="s-part">${esc(p.name)}</td>
+      <td class="s-mat" data-label="วัสดุ / ตัวเลือก">${esc(q.m.name)}<br><span class="muted">${esc(q.fin.name)} · ${esc(q.tol.name)}</span></td>
+      <td class="n" data-label="น้ำหนัก">${weight(q.partKg)}</td>
+      <td class="n" data-label="จำนวน">${q.qty}</td>
+      <td class="n" data-label="ราคาต่อชิ้น">${baht(q.unit)}</td>
+      <td class="n s-amount" data-label="จำนวนเงิน">${baht(q.line)}</td>
     </tr>`).join('');
   const foot = [
     `<tr><td colspan="6">รวมเป็นเงิน</td><td class="n">${baht(t.sub)}</td></tr>`,
@@ -666,14 +666,14 @@ function renderRates() {
 function renderMaterials() {
   const groupOpts = (sel) => Object.entries(GROUPS).map(([g, l]) => `<option value="${g}" ${g === sel ? 'selected' : ''}>${l}</option>`).join('');
   $('#matTable').innerHTML = `<thead><tr><th></th><th>วัสดุ</th><th>กลุ่ม</th><th>ความหนาแน่น (g/cm³)</th><th>ราคา (฿/กก.)</th><th>อัตรากัดเนื้อ (cm³/นาที)</th><th>ตัวคูณสึกหรอทูล</th><th></th></tr></thead><tbody>${materials.map((m, i) => `<tr data-i="${i}">
-    <td><input type="color" data-k="color" value="${m.color}" aria-label="สี" style="width:32px;height:28px;padding:0;border:0;background:none"/></td>
-    <td><input type="text" data-k="name" value="${esc(m.name)}"/></td>
-    <td><select data-k="group">${groupOpts(m.group)}</select></td>
-    <td class="num"><input type="number" data-k="density" value="${m.density}" step="0.01" min="0.1"/></td>
-    <td class="num"><input type="number" data-k="price" value="${m.price}" step="1" min="0"/></td>
-    <td class="num"><input type="number" data-k="mrr" value="${m.mrr}" step="0.1" min="0.1"/></td>
-    <td class="num"><input type="number" data-k="wear" value="${m.wear}" step="0.1" min="0"/></td>
-    <td><button class="del" data-del="${i}" title="ลบวัสดุ" aria-label="ลบ ${esc(m.name)}">🗑</button></td>
+    <td class="c-color"><input type="color" data-k="color" value="${m.color}" aria-label="สี" style="width:32px;height:28px;padding:0;border:0;background:none"/></td>
+    <td class="c-name"><input type="text" data-k="name" value="${esc(m.name)}" aria-label="ชื่อวัสดุ"/></td>
+    <td class="c-group" data-label="กลุ่ม"><select data-k="group" aria-label="กลุ่ม">${groupOpts(m.group)}</select></td>
+    <td class="num c-density" data-label="ความหนาแน่น (g/cm³)"><input type="number" data-k="density" value="${m.density}" step="0.01" min="0.1" aria-label="ความหนาแน่น"/></td>
+    <td class="num c-price" data-label="ราคา (฿/กก.)"><input type="number" data-k="price" value="${m.price}" step="1" min="0" aria-label="ราคา"/></td>
+    <td class="num c-mrr" data-label="อัตรากัดเนื้อ (cm³/นาที)"><input type="number" data-k="mrr" value="${m.mrr}" step="0.1" min="0.1" aria-label="อัตรากัดเนื้อ"/></td>
+    <td class="num c-wear" data-label="ตัวคูณสึกหรอทูล"><input type="number" data-k="wear" value="${m.wear}" step="0.1" min="0" aria-label="ตัวคูณสึกหรอทูล"/></td>
+    <td class="c-del"><button class="del" data-del="${i}" title="ลบวัสดุ" aria-label="ลบ ${esc(m.name)}">🗑</button></td>
   </tr>`).join('')}</tbody>`;
 }
 
