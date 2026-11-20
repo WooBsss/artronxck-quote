@@ -1,0 +1,9 @@
+# keep line endings consistent across Windows / Mac / Linux
+* text=auto
+*.png binary
+*.jpg binary
+*.webp binary
+*.stl binary
+*.3mf binary
+*.step -text
+*.stp -text
