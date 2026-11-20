@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Artron Academy · ใบเสนอราคา CNC</title>
+  <link rel="icon" href="assets/artron-logo.png" />
+  <script src="theme.js"></script>
+  <meta name="description" content="อัปโหลดไฟล์ STEP, STL หรือ 3MF แล้วรับราคางาน CNC ทันทีเป็นเงินบาท" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <a class="brand" href="#">
+        <img src="assets/artron-logo.png" alt="Artron Academy" width="113" height="40" />
+        <span class="brand-sub">ระบบคำนวณราคา CNC</span>
+      </a>
+      <nav class="topnav">
+        <a href="#quote">ขอราคาทันที</a>
+        <a href="#shop">พารามิเตอร์โรงงาน</a>
+        <a href="#materials">วัสดุ</a>
+        <a href="#summary">สรุปใบเสนอราคา</a>
+      </nav>
+      <div class="top-actions">
+        <span class="currency-pill" title="ราคาทั้งหมดเป็นเงินบาท">฿ เงินบาทเท่านั้น</span>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="เปลี่ยนธีม">
+          <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></g></svg>
+          <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20.2 14.6A8.5 8.5 0 0 1 9.4 3.8a8.5 8.5 0 1 0 10.8 10.8z" fill="currentColor"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap hero-inner">
+      <div>
+        <h1>คำนวณราคางาน <span>CNC</span> ทันที</h1>
+        <p>อัปโหลดไฟล์ 3D เลือกวัสดุและการตกแต่งผิว แล้วรับราคาเป็นเงินบาท คำนวณจากน้ำหนักชิ้นงาน เวลาเครื่องจักร ค่าเครื่องจักร และค่าไฟฟ้า</p>
+      </div>
+      <ol class="steps">
+        <li><span>1</span>อัปโหลด STEP / STL / 3MF</li>
+        <li><span>2</span>เลือกวัสดุและตัวเลือก</li>
+        <li><span>3</span>รับราคาเป็นเงินบาท</li>
+      </ol>
+    </div>
+  </section>
+
+  <main class="wrap" id="quote">
+    <!-- อัปโหลด -->
+    <section class="card upload-card">
+      <label class="dropzone" id="dropzone">
+        <input type="file" id="fileInput" accept=".step,.stp,.stl,.3mf,.igs,.iges" multiple hidden />
+        <svg viewBox="0 0 24 24" width="40" height="40" aria-hidden="true"><path d="M12 16V4m0 0l-4.5 4.5M12 4l4.5 4.5M4 15v3a2 2 0 002 2h12a2 2 0 002-2v-3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <strong>ลากไฟล์ 3D มาวางที่นี่ หรือคลิกเพื่อเลือกไฟล์</strong>
+        <span class="muted">STEP (.step/.stp) · STL · 3MF · IGES — ไฟล์ถูกประมวลผลในเบราว์เซอร์ของคุณ ไม่มีการส่งขึ้นเซิร์ฟเวอร์</span>
+      </label>
+      <div class="upload-side">
+        <button class="btn ghost" id="sampleBtn" type="button">ลองใช้ชิ้นงานตัวอย่าง</button>
+        <div id="status" class="status" role="status" aria-live="polite"></div>
+      </div>
+    </section>
+
+    <section class="parts-strip" id="partsStrip" hidden></section>
+
+    <!-- พื้นที่ทำงาน -->
+    <section class="workspace" id="workspace" hidden>
+      <div class="card viewer-card">
+        <div class="viewer-head">
+          <h2 id="partTitle">ชิ้นงาน</h2>
+          <div class="viewer-tools">
+            <label class="chk"><input type="checkbox" id="showEdges" checked /> เส้นขอบ</label>
+            <label class="chk"><input type="checkbox" id="showBox" /> กล่องวัตถุดิบ</label>
+            <button class="btn small ghost" id="resetView" type="button">รีเซ็ตมุมมอง</button>
+          </div>
+        </div>
+        <div id="viewer" class="viewer"></div>
+        <div class="stats" id="stats"></div>
+        <p class="warn" id="meshWarn" hidden></p>
+      </div>
+
+      <div class="config-col">
+        <div class="card">
+          <h3>ตัวเลือกชิ้นงาน</h3>
+          <div class="field">
+            <label for="material">วัสดุ</label>
+            <select id="material"></select>
+            <small class="muted" id="materialInfo"></small>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label for="unit">หน่วยของโมเดล</label>
+              <select id="unit">
+                <option value="1">มิลลิเมตร (mm)</option>
+                <option value="10">เซนติเมตร (cm)</option>
+                <option value="25.4">นิ้ว (inch)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="qty">จำนวน (ชิ้น)</label>
+              <div class="qty">
+                <button type="button" data-step="-1" aria-label="ลดจำนวน">−</button>
+                <input type="number" id="qty" min="1" value="1" />
+                <button type="button" data-step="1" aria-label="เพิ่มจำนวน">+</button>
+              </div>
+            </div>
+          </div>
+          <div class="field">
+            <label for="finish">การตกแต่งผิว</label>
+            <select id="finish"></select>
+          </div>
+          <div class="grid2">
+            <div class="field">
+              <label for="tolerance">ค่าพิกัดความเผื่อ</label>
+              <select id="tolerance"></select>
+            </div>
+            <div class="field">
+              <label for="lead">ระยะเวลาผลิต</label>
+              <select id="lead"></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card price-card">
+          <div class="price-top">
+            <div>
+              <span class="muted">ราคาต่อชิ้น</span>
+              <div class="price-big" id="unitPrice">฿0.00</div>
+            </div>
+            <div class="right">
+              <span class="muted">รวม (<span id="qtyLabel">1</span> ชิ้น)</span>
+              <div class="price-mid" id="lineTotal">฿0.00</div>
+            </div>
+          </div>
+          <table class="breakdown" id="breakdown"></table>
+          <p class="muted tiny">ราคานี้ยังไม่รวม VAT (คิด VAT ในสรุปใบเสนอราคา) เป็นราคาประเมินเบื้องต้น ราคาจริงอาจเปลี่ยนแปลงหลังวิศวกรตรวจสอบแบบ</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- พารามิเตอร์โรงงาน -->
+    <section class="card" id="shop">
+      <div class="section-head">
+        <div>
+          <h2>พารามิเตอร์โรงงาน</h2>
+          <p class="muted">ราคาเครื่องจักร ค่าไฟฟ้า และค่าแรง ใช้คำนวณต้นทุนต่อชั่วโมง (บันทึกไว้ในเบราว์เซอร์นี้)</p>
+        </div>
+        <button class="btn small ghost" id="resetShop" type="button">คืนค่าเริ่มต้น</button>
+      </div>
+      <div class="param-groups" id="paramGroups"></div>
+      <div class="rate-strip" id="rateStrip"></div>
+    </section>
+
+    <!-- วัสดุ -->
+    <section class="card" id="materials">
+      <div class="section-head">
+        <div>
+          <h2>คลังวัสดุ</h2>
+          <p class="muted">ความหนาแน่นใช้คำนวณน้ำหนักชิ้นงาน แก้ไขราคาให้ตรงกับซัพพลายเออร์ของคุณ (บาทต่อกิโลกรัม)</p>
+        </div>
+        <div class="row-gap">
+          <button class="btn small ghost" id="addMaterial" type="button">+ เพิ่มวัสดุ</button>
+          <button class="btn small ghost" id="resetMaterials" type="button">คืนค่าเริ่มต้น</button>
+        </div>
+      </div>
+      <div class="table-scroll">
+        <table class="mat-table" id="matTable"></table>
+      </div>
+    </section>
+
+    <!-- สรุป -->
+    <section class="card" id="summary">
+      <!-- only shown when printing / saving as PDF -->
+      <div class="print-head">
+        <img src="assets/artron-logo.png" alt="Artron Academy" />
+        <div class="print-doc">
+          <strong>ใบเสนอราคา</strong>
+          <span>QUOTATION</span>
+          <span id="quoteNo"></span>
+        </div>
+      </div>
+      <div class="section-head">
+        <div>
+          <h2>สรุปใบเสนอราคา</h2>
+          <p class="muted" id="quoteMeta"></p>
+        </div>
+        <button class="btn" id="printBtn" type="button">พิมพ์ / บันทึก PDF</button>
+      </div>
+      <div class="table-scroll">
+        <table class="summary-table" id="summaryTable"></table>
+      </div>
+      <div class="meme-wrap">
+        <figure class="meme" id="meme" aria-live="polite">
+          <div class="meme-panel">
+            <p class="meme-top" id="memeTop"></p>
+            <div class="meme-art" id="memeArt" aria-hidden="true"></div>
+            <p class="meme-bottom" id="memeBottom"></p>
+          </div>
+          <figcaption>มีมประจำใบเสนอราคา · ไม่มีผลต่อราคา 😄</figcaption>
+        </figure>
+        <button class="btn small ghost" id="memeBtn" type="button">🎲 สุ่มมีมใหม่</button>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer wrap">
+    <span>ราคาทั้งหมดเป็นสกุลเงินบาท (฿ THB)</span>
+    <span class="muted">เวลาการกัดประเมินจากปริมาตรเนื้อวัสดุที่ถูกกัดออกและพื้นที่ผิว ไม่ใช่การจำลอง CAM</span>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js" defer></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

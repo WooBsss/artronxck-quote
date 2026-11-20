@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe",
+            "args": ["-NoProfile", "-ExecutionPolicy", "Bypass", "-File", "D:\\CODING\\cnc-quote\\backup.ps1"],
+            "timeout": 90,
+            "statusMessage": "Backing up to GitHub..."
+          }
+        ]
+      }
+    ]
+  }
+}
