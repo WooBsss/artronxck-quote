@@ -1,67 +1,124 @@
 [
   {
+    "version": "1.11",
+    "date": "2026-11-21",
+    "title": "ส่วนลดสมาชิกและนักเรียน ตรวจสอบการผลิต และภาษาอังกฤษ",
+    "title_en": "Member & student discounts, design checks and English",
+    "items": [
+      "เลือกประเภทลูกค้าได้: ลูกค้าทั่วไป / สมาชิก Artron Academy (ลด 15%) / นักเรียน-นักศึกษา (ลด 10%)",
+      "ตรวจสอบการผลิตอัตโนมัติ: ชิ้นงานใหญ่เกินเครื่อง ผนังบาง โมเดลไม่ปิดสนิท และขนาดผิดปกติ",
+      "เพิ่มจำนวนรูเกลียวต่อชิ้น และใบรายงานการตรวจวัด (QC report)",
+      "ปุ่ม \"คัดลอกลิงก์ใบเสนอราคา\" ส่งต่อใบเสนอราคาให้ผู้อื่นเปิดดูได้",
+      "สลับภาษาไทย / อังกฤษ ได้ที่ปุ่ม TH / EN ด้านบน"
+    ],
+    "items_en": [
+      "Choose the customer type: general / Artron Academy member (15% off) / student (10% off)",
+      "Automatic design checks: part too large for the machine, thin walls, open mesh and unusual sizes",
+      "Add threaded holes per part and an inspection report (QC report)",
+      "\"Copy quote link\" button to share a quote with someone else",
+      "Switch between Thai and English with the TH / EN button at the top"
+    ]
+  },
+  {
     "version": "1.10",
     "date": "2026-11-21",
     "title": "สวิตช์ธีมแบบมินิมอล",
+    "title_en": "Minimal theme switch",
     "items": [
       "สวิตช์โหมดสว่าง / มืด ออกแบบใหม่ให้เรียบง่ายและทันสมัย: ปุ่มกลมเลื่อนพร้อมไอคอนดวงอาทิตย์และดวงจันทร์",
       "การเปลี่ยนธีมนุ่มนวลและเร็วขึ้น ไม่มีประกายหรือขอบเรืองแสง"
+    ],
+    "items_en": [
+      "Redesigned light / dark switch: a simple sliding knob with sun and moon icons",
+      "Smoother, faster theme change without sparkles or glowing edges"
     ]
   },
   {
     "version": "1.9",
     "date": "2026-11-21",
     "title": "สวิตช์ธีมแบบใหม่ และแอนิเมชันที่ลื่นไหลขึ้น",
+    "title_en": "New theme switch and smoother animations",
     "items": [
       "ปุ่มเปลี่ยนธีมเป็นสวิตช์แบบเลื่อน: โหมดสว่างเป็นท้องฟ้ากับดวงอาทิตย์และก้อนเมฆ โหมดมืดเป็นดวงจันทร์กับดาวระยิบระยับ",
       "เปลี่ยนธีมพร้อมวงกลมขอบเรืองแสงสีฟ้ากวาดทั้งหน้า และประกายไฟ / ดาวพุ่งออกจากสวิตช์",
       "หมวดหมู่ในคลังวัสดุเปิด-ปิดแบบลื่นไหล การ์ดวัสดุค่อย ๆ ปรากฏทีละใบ พร้อมแถบสีและลูกศรเคลื่อนไหว"
+    ],
+    "items_en": [
+      "Theme button became a sliding switch",
+      "Theme change sweeps across the page from the switch",
+      "Material categories open and close smoothly, with cards appearing one by one"
     ]
   },
   {
     "version": "1.8",
     "date": "2026-11-21",
     "title": "หมวดหมู่วัสดุแบบดรอปดาวน์ และประกาศอัปเดต",
+    "title_en": "Material categories and update announcements",
     "items": [
       "คลังวัสดุแบ่งเป็นหมวดหมู่ (อะลูมิเนียม, เหล็ก, สแตนเลส ฯลฯ) กดเปิด-ปิดได้ พร้อมแสดงจำนวนและช่วงราคา",
       "เมื่อเข้าเว็บไซต์หลังมีการอัปเดต จะมีหน้าต่างแจ้งว่ามีอะไรใหม่",
       "กดปุ่ม \"มีอะไรใหม่\" ที่ท้ายหน้าเพื่อดูประวัติการอัปเดตได้ทุกเมื่อ"
+    ],
+    "items_en": [
+      "The material library is grouped into categories you can open and close, with item count and price range",
+      "A \"What's new\" window appears when you visit after an update",
+      "Open the update history any time with \"What's new\" at the bottom of the page"
     ]
   },
   {
     "version": "1.7",
     "date": "2026-11-21",
     "title": "แสดงสีชิ้นงานจากไฟล์",
+    "title_en": "Part colours from the file",
     "items": [
       "มุมมอง 3D แสดงสีตามที่กำหนดไว้ในไฟล์ STEP / IGES / 3MF (แยกสีตามชิ้นและตามผิวได้)",
       "ติ๊ก \"สีจากไฟล์\" เพื่อสลับกลับไปใช้สีของวัสดุที่เลือก"
+    ],
+    "items_en": [
+      "The 3D view shows the colours saved in STEP / IGES / 3MF files (per part and per face)",
+      "Untick \"File colours\" to show the selected material's colour instead"
     ]
   },
   {
     "version": "1.6",
     "date": "2026-11-21",
     "title": "การชุบแข็ง",
+    "title_en": "Hardening",
     "items": [
       "เปลี่ยน \"การตกแต่งผิว\" เป็น \"การชุบแข็ง\" มีตัวเลือก ไม่ชุบแข็ง / ชุบ",
       "เมื่อเลือก \"ชุบ\" สามารถพิมพ์หมายเหตุการชุบได้ และแสดงในใบเสนอราคา",
       "ยกเลิกตัวเลือกระยะเวลาผลิต"
+    ],
+    "items_en": [
+      "\"Surface finish\" was replaced by \"Hardening\": no hardening / harden",
+      "When hardening is chosen, you can type a note that appears on the quote",
+      "The lead-time option was removed"
     ]
   },
   {
     "version": "1.5",
     "date": "2026-11-20",
     "title": "ใช้งานบนมือถือได้ดีขึ้น",
+    "title_en": "Better on phones",
     "items": [
       "คลังวัสดุและสรุปใบเสนอราคาแสดงเป็นการ์ด อ่านง่ายบนมือถือ",
       "เว็บไซต์โหลดเวอร์ชันล่าสุดให้อัตโนมัติ"
+    ],
+    "items_en": [
+      "The material library and quote summary show as easy-to-read cards on phones",
+      "The website loads the latest version automatically"
     ]
   },
   {
     "version": "1.4",
     "date": "2026-11-20",
     "title": "เปิดใช้งานออนไลน์",
+    "title_en": "Online",
     "items": [
       "เปิดเว็บไซต์ได้จากมือถือหรือคอมพิวเตอร์ทุกเครื่องผ่าน woobsss.github.io/artronxck-quote"
+    ],
+    "items_en": [
+      "Open the website from any phone or computer at woobsss.github.io/artronxck-quote"
     ]
   }
 ]

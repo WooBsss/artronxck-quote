@@ -101,6 +101,22 @@ a { color: inherit; }
 .topnav a { text-decoration: none; color: var(--on-dark); font-size: .92rem; font-weight: 500; }
 .topnav a:hover { color: var(--accent); }
 .top-actions { display: flex; align-items: center; gap: 10px; }
+
+/* Thai / English switch — same glassy pill as the theme switch, sliding highlight */
+.lang-switch {
+  position: relative; display: inline-grid; grid-template-columns: 1fr 1fr; height: 30px; padding: 2px; flex-shrink: 0;
+  border-radius: 999px; border: 1px solid rgba(255, 255, 255, .14); background: rgba(255, 255, 255, .06); cursor: pointer;
+  font: 700 .72rem "Inter", sans-serif; letter-spacing: .04em; -webkit-tap-highlight-color: transparent;
+  transition: border-color .25s ease, background-color .25s ease;
+}
+.lang-switch:hover { border-color: rgba(255, 255, 255, .28); background: rgba(255, 255, 255, .09); }
+.lang-switch:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.ls-opt { position: relative; z-index: 1; width: 30px; display: grid; place-items: center; color: rgba(255, 255, 255, .55); transition: color .3s ease; }
+.ls-pill { position: absolute; top: 2px; bottom: 2px; left: 2px; width: 30px; border-radius: 999px; background: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .35); transition: transform .38s cubic-bezier(.4, 0, .2, 1); }
+.lang-switch[data-lang="en"] .ls-pill { transform: translateX(100%); }
+.lang-switch[data-lang="th"] .ls-opt[data-v="th"], .lang-switch[data-lang="en"] .ls-opt[data-v="en"] { color: #0a0b0c; }
+@media (prefers-reduced-motion: reduce) { .ls-pill, .ls-opt { transition: none; } }
 /* Light / dark switch — minimal: glassy pill, faint icons on the track, knob carries the active icon.
    theme.js sets .is-dark immediately on click, so the knob moves before the page re-colours. */
 .theme-switch {
@@ -197,6 +213,32 @@ main { margin-top: -44px; display: grid; gap: 20px; padding-bottom: 30px; }
 .stat .k { font-size: .74rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
 .stat .v { font: 600 1.08rem/1.35 var(--mono); margin-top: 4px; overflow-wrap: normal; letter-spacing: -.005em; }
 .warn { background: var(--warn-soft); color: var(--warn); border-radius: 10px; padding: 10px 12px; font-size: .86rem; margin: 12px 0 0; }
+/* Manufacturability (design) checks under the 3D view */
+.dfm { margin-top: 14px; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px 8px; background: var(--surface-2); }
+.dfm:empty { display: none; }
+.dfm-head { font-size: .78rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-bottom: 6px; }
+.dfm.dfm-warn { border-color: color-mix(in srgb, #e0a100 55%, var(--line)); }
+.dfm.dfm-error { border-color: color-mix(in srgb, #d14343 60%, var(--line)); }
+.dfm ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: .86rem; }
+.dfm li { display: flex; gap: 8px; align-items: flex-start; line-height: 1.45; }
+.dfm-ic { width: 18px; height: 18px; flex-shrink: 0; border-radius: 50%; display: grid; place-items: center; font: 800 .7rem "Inter", sans-serif; margin-top: 1px; }
+.lv-ok .dfm-ic { background: rgba(15, 157, 88, .15); color: #0f9d58; }
+.lv-info .dfm-ic { background: var(--accent-soft); color: var(--accent-strong); }
+.lv-warn .dfm-ic { background: rgba(224, 161, 0, .18); color: #b37f00; }
+.lv-error .dfm-ic { background: rgba(209, 67, 67, .16); color: #d14343; }
+.lv-error { color: #d14343; font-weight: 600; }
+.chip-warn { display: inline-grid; place-items: center; width: 16px; height: 16px; border-radius: 50%; background: #d14343; color: #fff; font: 800 .66rem "Inter", sans-serif; vertical-align: 1px; }
+
+/* new part options */
+.field-check { justify-content: flex-end; }
+.chk.big { white-space: normal; font-size: .84rem; font-weight: 600; color: var(--ink-2); align-items: flex-start; padding: 8px 0; line-height: 1.35; }
+.chk.big input { width: 18px; height: 18px; margin: 0; flex-shrink: 0; accent-color: var(--accent); }
+.customer-field { margin-top: 4px; padding-top: 14px; border-top: 1px dashed var(--line); margin-bottom: 0; }
+.cust-note { color: var(--accent-strong); font-weight: 600; }
+.breakdown tr.subtotal td { border-top: 1px solid var(--line); font-weight: 600; }
+.breakdown tr.discount td, .summary-table tfoot tr.discount td { color: #0f9d58; font-weight: 700; }
+.summary-table tfoot tr.note td { font-size: .78rem; color: var(--muted); font-weight: 500; }
+#shareBtn.copied { border-color: #0f9d58; color: #0f9d58; }
 
 .config-col { display: grid; gap: 20px; position: sticky; top: 76px; }
 .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; min-width: 0; }
@@ -227,7 +269,7 @@ textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
 .breakdown tr.total td { border-bottom: 0; border-top: 2px solid var(--ink); font-weight: 700; padding-top: 8px; }
 
 /* Shop params */
-.param-groups { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.param-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; }
 .param-group { background: var(--surface-2); border: 1px solid var(--line); border-radius: 12px; padding: 14px; min-width: 0; }
 .param-group h4 { margin: 0 0 10px; font-size: .9rem; display: flex; align-items: center; gap: 8px; }
 .param-group h4 i { font-style: normal; color: var(--accent-strong); }
@@ -387,6 +429,7 @@ textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
 }
 
 @media (max-width: 480px) {
+  .currency-pill { display: none; } /* header too narrow: TH/EN + theme switches take priority */
   .brand-sub { display: none; }
   .currency-pill { font-size: .72rem; padding: 4px 10px; }
 }
@@ -416,8 +459,9 @@ textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
   .print-doc strong { font-size: 1.3rem; }
   .print-doc span { font-size: .78rem; color: #b7c3c6; letter-spacing: .06em; }
   .print-doc span:first-of-type { color: #22dddc; font-weight: 700; letter-spacing: .2em; }
-  .update-dialog, .theme-switch, .theme-ring, .topbar, .hero, .upload-card, .parts-strip, .workspace, #shop, #materials, .footer, #printBtn { display: none !important; }
+  .update-dialog, .theme-switch, .theme-ring, .topbar, .hero, .upload-card, .parts-strip, .workspace, #shop, #materials, .footer, #printBtn, #shareBtn, .lang-switch { display: none !important; }
   body { background: #fff; color: #000; }
   main { margin: 0; }
   .card { box-shadow: none; border: 0; }
 }
+.share-out { display: block; width: 100%; margin-top: 6px; font-size: .78rem; }

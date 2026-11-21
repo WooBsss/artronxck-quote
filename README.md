@@ -6,6 +6,11 @@ Thai-language website that prices CNC machined parts in Thai Baht (฿).
 - Pick a material: weight = volume × density
 - Price is built from material, machine depreciation and maintenance, electricity (kW × ฿/kWh), labour, tool wear, setup, hardening (optional, with a note), overhead, profit and VAT 7%
 - Editable shop parameters and material library (saved in the browser)
+- Customer types: general, Artron Academy member and student discounts (set the % in the shop parameters)
+- Automatic design checks: too large for the machine (X/Y/Z travel), thin walls, open mesh, unusual size
+- Threaded holes per part and an optional inspection (QC) report
+- "Copy quote link" shares a quote (settings + part sizes) in the URL
+- Thai / English language switch (TH / EN)
 - Light / dark theme switch, printable PDF quote with logo and quote number
 
 ## Live website (phone or any device)
@@ -37,6 +42,8 @@ Then open http://localhost:8080. Any static host (GitHub Pages, Netlify, …) al
 | `styles.css` | Theme (light blue / black / white), print layout |
 | `app.js` | File parsing, 3D viewer, pricing model |
 | `theme.js` | Light / dark switch with animation |
+| `i18n.js` | Thai / English switch (static page text) |
+| `updates.json` | "What's new" popup entries (newest first) |
 | `serve.ps1` | Tiny local web server |
 | `open-website.ps1` | Desktop-shortcut launcher (start server + open browser) |
 | `backup.ps1` | Commit and push all changes to GitHub |

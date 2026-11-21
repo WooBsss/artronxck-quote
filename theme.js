@@ -19,9 +19,10 @@
     const dark = theme === 'dark';
     btn.classList.toggle('is-dark', dark);
     btn.setAttribute('aria-checked', String(dark));
-    const next = dark ? 'โหมดสว่าง' : 'โหมดมืด';
-    btn.setAttribute('aria-label', 'โหมดมืด'); // role=switch: aria-checked carries the on/off state
-    btn.title = `เปลี่ยนเป็น${next}`;
+    const L = (th, en) => (window.I18N?.lang === 'en' ? en : th);
+    const next = dark ? L('โหมดสว่าง', 'light mode') : L('โหมดมืด', 'dark mode');
+    btn.setAttribute('aria-label', L('โหมดมืด', 'Dark mode')); // role=switch: aria-checked carries the on/off state
+    btn.title = L(`เปลี่ยนเป็น${next}`, `Switch to ${next}`);
   }
 
   function apply(theme) {
@@ -70,5 +71,6 @@
   document.addEventListener('DOMContentLoaded', () => {
     syncSwitch(current()); // labels + knob position for the server-rendered button
     document.getElementById('themeToggle')?.addEventListener('click', toggle);
+    window.addEventListener('langchange', () => syncSwitch(current())); // re-label in the new language
   });
 })();

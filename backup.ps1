@@ -27,7 +27,7 @@ if ($hasChanges) {
     $ver = Get-Date -Format 'yyyyMMddHHmmss'
     $utf8 = New-Object System.Text.UTF8Encoding($false)
     $html = [IO.File]::ReadAllText($index)
-    $html = [regex]::Replace($html, '((?:href|src)="(?:styles\.css|app\.js|theme\.js))(?:\?v=[^"]*)?"', "`$1?v=$ver`"")
+    $html = [regex]::Replace($html, '((?:href|src)="(?:styles\.css|app\.js|theme\.js|i18n\.js))(?:\?v=[^"]*)?"', "`$1?v=$ver`"")
     $html = [regex]::Replace($html, '(<meta name="app-version" content=")[^"]*(")', "`${1}$ver`$2")
     [IO.File]::WriteAllText($index, $html, $utf8)
     [IO.File]::WriteAllText((Join-Path $PSScriptRoot 'version.json'), "{`"v`":`"$ver`"}`n", $utf8)
