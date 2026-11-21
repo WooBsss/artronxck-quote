@@ -78,7 +78,7 @@
     'เวลาการกัดประเมินจากปริมาตรเนื้อวัสดุที่ถูกกัดออกและพื้นที่ผิว ไม่ใช่การจำลอง CAM':
       'Machining time is estimated from removed volume and surface area; it is not a CAM simulation.',
   };
-  const TITLE = { th: 'Artron Academy · ใบเสนอราคา CNC', en: 'Artron Academy · CNC Quote' };
+  const TITLE = { th: 'CK PLUS QUOTE', en: 'CK PLUS QUOTE' };
   const ATTRS = ['title', 'aria-label', 'placeholder'];
   const textOrig = new WeakMap(); // text node → original Thai
   const SKIP = new Set(['SCRIPT', 'STYLE', 'TEXTAREA', 'CANVAS', 'svg']);
