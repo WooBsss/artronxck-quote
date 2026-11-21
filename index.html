@@ -5,14 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Artron Academy · ใบเสนอราคา CNC</title>
   <link rel="icon" href="assets/artron-logo.png" />
-  <script src="i18n.js?v=20261121104809"></script>
-  <script src="theme.js?v=20261121104809"></script>
+  <script src="i18n.js?v=20261121105402"></script>
+  <script src="theme.js?v=20261121105402"></script>
   <meta name="description" content="อัปโหลดไฟล์ STEP, STL หรือ 3MF แล้วรับราคางาน CNC ทันทีเป็นเงินบาท" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <meta name="app-version" content="20261121104809" />
-  <link rel="stylesheet" href="styles.css?v=20261121104809" />
+  <meta name="app-version" content="20261121105402" />
+  <link rel="stylesheet" href="styles.css?v=20261121105402" />
   <script type="importmap">
   {
     "imports": {
@@ -152,12 +152,19 @@
             </div>
           </div>
           <div class="field customer-field">
-            <label for="custType">ประเภทลูกค้า (ทั้งออเดอร์)</label>
+            <label for="custType">ส่วนลด (ทั้งออเดอร์)</label>
             <select id="custType">
-              <option value="general">ลูกค้าทั่วไป</option>
-              <option value="academy">สมาชิก Artron Academy</option>
-              <option value="student">นักเรียน / นักศึกษา</option>
+              <option value="general">ไม่มีส่วนลด</option>
+              <option value="academy">สมาชิก Artron Academy (กรอกส่วนลดเอง)</option>
+              <option value="student">นักเรียน / นักศึกษา (ลด 15%)</option>
             </select>
+            <div class="academy-field" id="academyField" hidden>
+              <label for="academyPct">ส่วนลดสมาชิก Artron Academy</label>
+              <div class="pct-in">
+                <input type="number" id="academyPct" min="0" max="100" step="0.5" value="0" inputmode="decimal" />
+                <span>%</span>
+              </div>
+            </div>
             <small class="cust-note" id="custNote" hidden></small>
           </div>
         </div>
@@ -260,6 +267,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js" defer></script>
-  <script type="module" src="app.js?v=20261121104809"></script>
+  <script type="module" src="app.js?v=20261121105402"></script>
 </body>
 </html>

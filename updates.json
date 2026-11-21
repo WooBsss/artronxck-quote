@@ -1,5 +1,21 @@
 [
   {
+    "version": "1.12",
+    "date": "2026-11-21",
+    "title": "ปรับส่วนลดใหม่",
+    "title_en": "New discount options",
+    "items": [
+      "ตัวเลือกส่วนลด: ไม่มีส่วนลด / สมาชิก Artron Academy / นักเรียน-นักศึกษา",
+      "สมาชิก Artron Academy: กรอกเปอร์เซ็นต์ส่วนลดเองได้",
+      "นักเรียน / นักศึกษา: ลด 15% อัตโนมัติ"
+    ],
+    "items_en": [
+      "Discount choices: no discount / Artron Academy member / student",
+      "Artron Academy member: type in the discount percentage yourself",
+      "Student: 15% off automatically"
+    ]
+  },
+  {
     "version": "1.11",
     "date": "2026-11-21",
     "title": "ส่วนลดสมาชิกและนักเรียน ตรวจสอบการผลิต และภาษาอังกฤษ",

@@ -63,14 +63,17 @@ const TOLERANCES = [
 ];
 const tolName = (t) => L(...t.name);
 
-// customer types (whole order): discount % comes from the shop parameters
+// customer types (whole order): no discount · Artron Academy (discount % typed in) · student (fixed 15%)
+const STUDENT_PCT = 15;
 const CUSTOMERS = {
-  general: { name: ['ลูกค้าทั่วไป', 'General customer'], pctKey: null },
-  academy: { name: ['สมาชิก Artron Academy', 'Artron Academy member'], pctKey: 'academyPct' },
-  student: { name: ['นักเรียน / นักศึกษา', 'Student'], pctKey: 'studentPct' },
+  general: { name: ['ไม่มีส่วนลด', 'No discount'] },
+  academy: { name: ['สมาชิก Artron Academy', 'Artron Academy member'] },
+  student: { name: ['นักเรียน / นักศึกษา', 'Student'] },
 };
 const custName = (c) => L(...(CUSTOMERS[c] || CUSTOMERS.general).name);
-const custPct = (c) => { const k = (CUSTOMERS[c] || CUSTOMERS.general).pctKey; return k ? Math.min(Math.max(shop[k] || 0, 0), 100) : 0; };
+const clampPct = (v) => Math.min(Math.max(Number(v) || 0, 0), 100);
+const pctTxt = (p) => `${num(p, p % 1 ? 1 : 0)}%`;
+const custPct = (c) => (c === 'student' ? STUDENT_PCT : c === 'academy' ? clampPct(academyDiscount) : 0);
 
 // label / unit / title are [Thai, English]
 const PARAM_GROUPS = [
@@ -107,9 +110,7 @@ const PARAM_GROUPS = [
     { key: 'hardenMin', label: ['ค่าชุบแข็งขั้นต่ำต่อล็อต', 'Minimum hardening charge per batch'], unit: ['฿', '฿'], def: 500, step: 50 },
     { key: 'vat', label: ['คิดภาษีมูลค่าเพิ่ม (VAT 7%)', 'Add VAT 7%'], type: 'toggle', def: true },
   ] },
-  { title: ['ส่วนลดและบริการเสริม', 'Discounts & extras'], icon: '%', params: [
-    { key: 'academyPct', label: ['ส่วนลดสมาชิก Artron Academy', 'Artron Academy member discount'], unit: ['%', '%'], def: 15, step: 1 },
-    { key: 'studentPct', label: ['ส่วนลดนักเรียน / นักศึกษา', 'Student discount'], unit: ['%', '%'], def: 10, step: 1 },
+  { title: ['บริการเสริม', 'Extras'], icon: '+', params: [
     { key: 'threadPrice', label: ['ค่าทำเกลียว', 'Thread tapping'], unit: ['฿/รู', '฿/hole'], def: 15, step: 1 },
     { key: 'qcPrice', label: ['ใบรายงานการตรวจวัด (QC)', 'Inspection report (QC)'], unit: ['฿/ล็อต', '฿/batch'], def: 500, step: 50 },
   ] },
@@ -131,7 +132,11 @@ const parts = [];
 let selectedId = null;
 let partSeq = 0;
 let customerType = 'general';
-try { if (CUSTOMERS[localStorage.getItem('cncq.customer')]) customerType = localStorage.getItem('cncq.customer'); } catch { /* storage blocked */ }
+let academyDiscount = 0; // % typed in for Artron Academy members
+try {
+  if (CUSTOMERS[localStorage.getItem('cncq.customer')]) customerType = localStorage.getItem('cncq.customer');
+  academyDiscount = clampPct(localStorage.getItem('cncq.academyPct'));
+} catch { /* storage blocked */ }
 
 const matById = (id) => materials.find((m) => m.id === id) || materials[0];
 // built-in material keeps its English name unless the user renamed it
@@ -638,10 +643,13 @@ function syncForm(part) {
 function syncCustomer() {
   $('#custType').value = customerType;
   const pct = custPct(customerType);
+  const academy = customerType === 'academy';
+  $('#academyField').hidden = !academy;
+  if (document.activeElement !== $('#academyPct')) $('#academyPct').value = academyDiscount;
   const note = $('#custNote');
   note.hidden = customerType === 'general';
-  if (customerType === 'academy') note.textContent = L(`ส่วนลด ${num(pct, 0)}% สำหรับสมาชิก Artron Academy`, `${num(pct, 0)}% discount for Artron Academy members`);
-  if (customerType === 'student') note.textContent = L(`ราคานักเรียน / นักศึกษา ลด ${num(pct, 0)}% · กรุณาแสดงบัตรนักเรียน / นักศึกษาเมื่อสั่งงาน`, `Student price: ${num(pct, 0)}% off · please show a valid student ID when ordering`);
+  if (academy) note.textContent = L(`ส่วนลดสมาชิก Artron Academy ${num(pct, pct % 1 ? 1 : 0)}%`, `Artron Academy member discount: ${num(pct, pct % 1 ? 1 : 0)}%`);
+  if (customerType === 'student') note.textContent = L(`ราคานักเรียน / นักศึกษา ลด ${STUDENT_PCT}% อัตโนมัติ · กรุณาแสดงบัตรนักเรียน / นักศึกษาเมื่อสั่งงาน`, `Student price: ${STUDENT_PCT}% off automatically · please show a valid student ID when ordering`);
 }
 
 function renderMaterialOptions() {
@@ -720,7 +728,7 @@ function refresh(refit = false) {
   rows.push(row(`${L('กำไร', 'Profit')} ${num(shop.profitPct, 0)}%`, '', q.profit));
   if (q.discount) {
     rows.push(row(L('ราคาก่อนส่วนลด', 'Price before discount'), '', q.listUnit, 'subtotal'));
-    rows.push(row(`${L('ส่วนลด', 'Discount')} ${esc(custName(customerType))} ${num(q.discPct, 0)}%`, '', -q.discount, 'discount'));
+    rows.push(row(`${L('ส่วนลด', 'Discount')} ${esc(custName(customerType))} ${pctTxt(q.discPct)}`, '', -q.discount, 'discount'));
   }
   rows.push(`<tr class="total"><td>${L('ราคาต่อชิ้น (ไม่รวม VAT)', 'Price per piece (excl. VAT)')}</td><td class="n">${baht(q.unit)}</td></tr>`);
   $('#breakdown').innerHTML = rows.join('');
@@ -789,7 +797,7 @@ function renderSummary() {
   const pct = custPct(customerType);
   const foot = [
     t.discount > 0.004 ? `<tr><td colspan="6">${L('ราคาก่อนส่วนลด', 'Price before discount')}</td><td class="n">${baht(t.listSub)}</td></tr>` : '',
-    t.discount > 0.004 ? `<tr class="discount"><td colspan="6">${L('ส่วนลด', 'Discount')} ${esc(custName(customerType))} ${num(pct, 0)}%</td><td class="n">−${baht(t.discount)}</td></tr>` : '',
+    t.discount > 0.004 ? `<tr class="discount"><td colspan="6">${L('ส่วนลด', 'Discount')} ${esc(custName(customerType))} ${pctTxt(pct)}</td><td class="n">−${baht(t.discount)}</td></tr>` : '',
     `<tr><td colspan="6">${L('รวมเป็นเงิน', 'Subtotal')}</td><td class="n">${baht(t.sub)}</td></tr>`,
     t.minAdj ? `<tr><td colspan="6">${L(`ปรับยอดขั้นต่ำการสั่งซื้อ (ขั้นต่ำ ${baht(shop.minOrder)})`, `Minimum order adjustment (minimum ${baht(shop.minOrder)})`)}</td><td class="n">${baht(t.minAdj)}</td></tr>` : '',
     shop.vat ? `<tr><td colspan="6">${L('ภาษีมูลค่าเพิ่ม 7%', 'VAT 7%')}</td><td class="n">${baht(t.vat)}</td></tr>` : '',
@@ -905,7 +913,15 @@ function bind() {
     try { localStorage.setItem('cncq.customer', customerType); } catch { /* storage blocked */ }
     syncCustomer();
     refresh();
+    if (customerType === 'academy') { $('#academyPct').focus(); $('#academyPct').select(); }
   });
+  $('#academyPct').addEventListener('input', (e) => {
+    academyDiscount = clampPct(e.target.value);
+    try { localStorage.setItem('cncq.academyPct', String(academyDiscount)); } catch { /* storage blocked */ }
+    syncCustomer();
+    refresh();
+  });
+  $('#academyPct').addEventListener('blur', (e) => { e.target.value = academyDiscount; });
   $('#shareBtn').addEventListener('click', copyShareLink);
   $('#qty').addEventListener('input', onPart((p, e) => { const v = Math.floor(Number(e.target.value)); if (v >= 1) p.qty = Math.min(v, 100000); }));
   $('#qty').addEventListener('blur', () => { const p = selectedPart(); if (p) $('#qty').value = p.qty; });
@@ -1057,7 +1073,7 @@ const r4 = (v) => Math.round(v * 1e4) / 1e4;
 
 function buildShareUrl() {
   const data = {
-    v: 1, c: customerType,
+    v: 1, c: customerType, d: customerType === 'academy' ? academyDiscount : undefined,
     p: parts.map((p) => ({
       n: p.name, e: p.ext, u: p.unitScale, m: p.materialId, h: p.harden, hn: p.hardenNote || '', t: p.tolId, q: p.qty,
       th: p.threads || 0, qc: p.qc ? 1 : 0,
@@ -1102,6 +1118,7 @@ function loadFromLink() {
   let data;
   try { data = JSON.parse(b64urlDecode(m[1])); } catch { setStatus(L('ลิงก์ใบเสนอราคาไม่ถูกต้อง', 'This quote link is not valid'), true); return; }
   if (CUSTOMERS[data.c]) customerType = data.c;
+  if (data.c === 'academy') academyDiscount = clampPct(data.d);
   for (const s of data.p || []) {
     const size = (s.g?.s || [10, 10, 10]).map((v) => Math.max(Number(v) || 0, 0.001));
     const box = new THREE.BoxGeometry(size[0], size[1], size[2]).translate(0, 0, size[2] / 2);
