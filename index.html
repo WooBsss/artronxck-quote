@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Artron Academy · ใบเสนอราคา CNC</title>
   <link rel="icon" href="assets/artron-logo.png" />
-  <script src="theme.js?v=20261121101519"></script>
+  <script src="theme.js?v=20261121102243"></script>
   <meta name="description" content="อัปโหลดไฟล์ STEP, STL หรือ 3MF แล้วรับราคางาน CNC ทันทีเป็นเงินบาท" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <meta name="app-version" content="20261121101519" />
-  <link rel="stylesheet" href="styles.css?v=20261121101519" />
+  <meta name="app-version" content="20261121102243" />
+  <link rel="stylesheet" href="styles.css?v=20261121102243" />
   <script type="importmap">
   {
     "imports": {
@@ -36,9 +36,15 @@
       </nav>
       <div class="top-actions">
         <span class="currency-pill" title="ราคาทั้งหมดเป็นเงินบาท">฿ เงินบาทเท่านั้น</span>
-        <button class="theme-toggle" id="themeToggle" type="button" aria-label="เปลี่ยนธีม">
-          <svg class="icon-sun" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><circle cx="12" cy="12" r="4.2" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></g></svg>
-          <svg class="icon-moon" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M20.2 14.6A8.5 8.5 0 0 1 9.4 3.8a8.5 8.5 0 1 0 10.8 10.8z" fill="currentColor"/></svg>
+        <button class="theme-switch" id="themeToggle" type="button" role="switch" aria-checked="false" aria-label="เปลี่ยนธีม">
+          <span class="ts-track" aria-hidden="true">
+            <span class="ts-stars"><i></i><i></i><i></i><i></i><i></i><i></i></span>
+            <span class="ts-clouds"><i></i><i></i><i></i></span>
+          </span>
+          <span class="ts-knob" aria-hidden="true">
+            <span class="ts-sun"></span>
+            <span class="ts-moon"><i></i><i></i><i></i></span>
+          </span>
         </button>
       </div>
     </div>
@@ -230,6 +236,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js" defer></script>
-  <script type="module" src="app.js?v=20261121101519"></script>
+  <script type="module" src="app.js?v=20261121102243"></script>
 </body>
 </html>

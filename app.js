@@ -689,8 +689,8 @@ function renderMaterials() {
     const lo = Math.min(...rows.map(({ m }) => m.price)), hi = Math.max(...rows.map(({ m }) => m.price));
     const range = `${lo === hi ? baht(lo) : `${baht(lo)}–${baht(hi)}`}/กก.`;
     return `<details class="mat-group" data-group="${g}" ${openMatGroups.has(g) ? 'open' : ''}>
-      <summary><span class="mg-name">${label}</span><span class="mg-meta">${rows.length} รายการ · ${range}</span><span class="mg-chev" aria-hidden="true"></span></summary>
-      <div class="table-scroll"><table class="mat-table">${head}<tbody>${rows.map(({ m, i }) => matRow(m, i, groupOpts)).join('')}</tbody></table></div>
+      <summary><span class="mg-name">${label}</span><span class="mg-count">${rows.length}</span><span class="mg-meta">${range}</span><span class="mg-chev" aria-hidden="true"></span></summary>
+      <div class="mg-body"><div class="table-scroll"><table class="mat-table">${head}<tbody>${rows.map(({ m, i }) => matRow(m, i, groupOpts)).join('')}</tbody></table></div></div>
     </details>`;
   }).join('');
 }
@@ -813,6 +813,36 @@ function bind() {
     if (k === 'group') openMatGroups.add(m.group); // keep the moved material visible
     if (k === 'group' || k === 'price') renderMaterials(); // moves section / updates the price range
     matChanged();
+  });
+  // animated open / close for the category dropdowns (native <details> just snaps)
+  $('#matTable').addEventListener('click', (e) => {
+    const sum = e.target.closest('.mat-group > summary');
+    if (!sum || matchMedia('(prefers-reduced-motion: reduce)').matches) return; // let <details> toggle normally
+    e.preventDefault();
+    const det = sum.parentElement;
+    const body = det.querySelector('.mg-body');
+    if (det.dataset.animating) return;
+    det.dataset.animating = '1';
+    const done = () => { delete det.dataset.animating; body.style.height = ''; body.style.overflow = ''; };
+    if (!det.open) {
+      det.open = true;
+      const h = body.scrollHeight;
+      body.style.overflow = 'hidden';
+      body.animate([{ height: '0px', opacity: 0 }, { height: `${h}px`, opacity: 1 }],
+        { duration: Math.min(260 + h * 0.25, 520), easing: 'cubic-bezier(.2, .8, .2, 1)' }).finished.then(done, done);
+      body.querySelectorAll('tbody tr').forEach((tr, i) => {
+        tr.animate([{ opacity: 0, transform: 'translateY(-10px) scale(.98)' }, { opacity: 1, transform: 'none' }],
+          { duration: 320, delay: 60 + i * 45, easing: 'cubic-bezier(.2, .8, .2, 1)', fill: 'backwards' });
+      });
+      sum.animate([{ transform: 'scale(.985)' }, { transform: 'scale(1)' }], { duration: 260, easing: 'cubic-bezier(.34, 1.56, .64, 1)' });
+    } else {
+      const h = body.offsetHeight;
+      body.style.overflow = 'hidden';
+      det.classList.add('mg-closing');
+      body.animate([{ height: `${h}px`, opacity: 1 }, { height: '0px', opacity: 0 }],
+        { duration: Math.min(200 + h * 0.15, 380), easing: 'cubic-bezier(.4, 0, .2, 1)' }).finished
+        .then(() => { det.open = false; det.classList.remove('mg-closing'); done(); }, done);
+    }
   });
   // remember which category dropdowns are open (toggle does not bubble, so listen in capture phase)
   $('#matTable').addEventListener('toggle', (e) => {
