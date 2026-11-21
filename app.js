@@ -677,9 +677,26 @@ function renderRates() {
   ].map(([k, v]) => `<span class="rate">${k} <b>${baht(v)}/ชม.</b></span>`).join('') + `<span class="rate"><strong>ต้นทุนเครื่องต่อชั่วโมง (อะลูมิเนียม ก่อนโสหุ้ยและกำไร)</strong> <b>${baht(total)}/ชม.</b></span>`;
 }
 
+// material library: one collapsible section (dropdown) per category; remembers which are open
+const openMatGroups = new Set();
 function renderMaterials() {
   const groupOpts = (sel) => Object.entries(GROUPS).map(([g, l]) => `<option value="${g}" ${g === sel ? 'selected' : ''}>${l}</option>`).join('');
-  $('#matTable').innerHTML = `<thead><tr><th></th><th>วัสดุ</th><th>กลุ่ม</th><th>ความหนาแน่น (g/cm³)</th><th>ราคา (฿/กก.)</th><th>อัตรากัดเนื้อ (cm³/นาที)</th><th>ตัวคูณสึกหรอทูล</th><th></th></tr></thead><tbody>${materials.map((m, i) => `<tr data-i="${i}">
+  const head = '<thead><tr><th></th><th>วัสดุ</th><th>กลุ่ม</th><th>ความหนาแน่น (g/cm³)</th><th>ราคา (฿/กก.)</th><th>อัตรากัดเนื้อ (cm³/นาที)</th><th>ตัวคูณสึกหรอทูล</th><th></th></tr></thead>';
+  const indexed = materials.map((m, i) => ({ m, i }));
+  $('#matTable').innerHTML = Object.entries(GROUPS).map(([g, label]) => {
+    const rows = indexed.filter(({ m }) => m.group === g);
+    if (!rows.length) return '';
+    const lo = Math.min(...rows.map(({ m }) => m.price)), hi = Math.max(...rows.map(({ m }) => m.price));
+    const range = `${lo === hi ? baht(lo) : `${baht(lo)}–${baht(hi)}`}/กก.`;
+    return `<details class="mat-group" data-group="${g}" ${openMatGroups.has(g) ? 'open' : ''}>
+      <summary><span class="mg-name">${label}</span><span class="mg-meta">${rows.length} รายการ · ${range}</span><span class="mg-chev" aria-hidden="true"></span></summary>
+      <div class="table-scroll"><table class="mat-table">${head}<tbody>${rows.map(({ m, i }) => matRow(m, i, groupOpts)).join('')}</tbody></table></div>
+    </details>`;
+  }).join('');
+}
+
+function matRow(m, i, groupOpts) {
+  return `<tr data-i="${i}">
     <td class="c-color"><input type="color" data-k="color" value="${m.color}" aria-label="สี" style="width:32px;height:28px;padding:0;border:0;background:none"/></td>
     <td class="c-name"><input type="text" data-k="name" value="${esc(m.name)}" aria-label="ชื่อวัสดุ"/></td>
     <td class="c-group" data-label="กลุ่ม"><select data-k="group" aria-label="กลุ่ม">${groupOpts(m.group)}</select></td>
@@ -688,7 +705,7 @@ function renderMaterials() {
     <td class="num c-mrr" data-label="อัตรากัดเนื้อ (cm³/นาที)"><input type="number" data-k="mrr" value="${m.mrr}" step="0.1" min="0.1" aria-label="อัตรากัดเนื้อ"/></td>
     <td class="num c-wear" data-label="ตัวคูณสึกหรอทูล"><input type="number" data-k="wear" value="${m.wear}" step="0.1" min="0" aria-label="ตัวคูณสึกหรอทูล"/></td>
     <td class="c-del"><button class="del" data-del="${i}" title="ลบวัสดุ" aria-label="ลบ ${esc(m.name)}">🗑</button></td>
-  </tr>`).join('')}</tbody>`;
+  </tr>`;
 }
 
 /* ------------------------------------------------------------------ *
@@ -793,8 +810,16 @@ function bind() {
       if (!Number.isFinite(v) || v < 0 || (k !== 'price' && k !== 'wear' && v === 0)) { e.target.value = m[k]; return; }
       m[k] = v;
     } else m[k] = e.target.value;
+    if (k === 'group') openMatGroups.add(m.group); // keep the moved material visible
+    if (k === 'group' || k === 'price') renderMaterials(); // moves section / updates the price range
     matChanged();
   });
+  // remember which category dropdowns are open (toggle does not bubble, so listen in capture phase)
+  $('#matTable').addEventListener('toggle', (e) => {
+    const g = e.target.dataset?.group;
+    if (!g) return;
+    if (e.target.open) openMatGroups.add(g); else openMatGroups.delete(g);
+  }, true);
   $('#matTable').addEventListener('click', (e) => {
     const del = e.target.closest('[data-del]');
     if (!del) return;
@@ -805,9 +830,11 @@ function bind() {
   });
   $('#addMaterial').addEventListener('click', () => {
     materials.push({ id: 'custom' + Date.now(), name: 'วัสดุใหม่', group: 'steel', density: 7.85, price: 100, mrr: 4, wear: 1.5, color: '#8f98a3' });
+    openMatGroups.add('steel');
     renderMaterials(); matChanged();
-    const inputs = document.querySelectorAll('#matTable input[data-k="name"]');
-    inputs[inputs.length - 1]?.focus();
+    const input = document.querySelector(`#matTable tr[data-i="${materials.length - 1}"] input[data-k="name"]`);
+    input?.scrollIntoView({ block: 'center' });
+    input?.select();
   });
   $('#resetMaterials').addEventListener('click', () => {
     materials = structuredClone(DEFAULT_MATERIALS);
@@ -827,21 +854,68 @@ bind();
 
 // Phones and in-app browsers (Instagram, LINE, …) keep a saved copy of the page for a while.
 // If a newer version is online, reload into it once — before the user has started a quote.
-(async () => {
+// Returns true when the page is being reloaded.
+async function reloadIfNewVersion() {
   const cur = document.querySelector('meta[name="app-version"]')?.content;
-  if (!cur || !/^https?:$/.test(location.protocol)) return;
+  if (!cur || !/^https?:$/.test(location.protocol)) return false;
   try {
     const res = await fetch(`version.json?t=${Date.now()}`, { cache: 'no-store' });
-    if (!res.ok) return;
+    if (!res.ok) return false;
     const { v } = await res.json();
-    if (!v || v === cur || parts.length) return;
+    if (!v || v === cur || parts.length) return false;
     const key = 'cncq.reloadedFor';
-    if (sessionStorage.getItem(key) === v) return; // already tried once: avoid reload loops
+    if (sessionStorage.getItem(key) === v) return false; // already tried once: avoid reload loops
     sessionStorage.setItem(key, v);
     const u = new URL(location.href);
     u.searchParams.set('v', v);
     location.replace(u.toString());
-  } catch { /* offline or storage blocked: keep the current page */ }
+    return true;
+  } catch { return false; /* offline or storage blocked: keep the current page */ }
+}
+
+/* ------------------------------------------------------------------ *
+ *  "มีอะไรใหม่" announcement — shown once after every new version (updates.json, newest first)
+ * ------------------------------------------------------------------ */
+const SEEN_UPDATE_KEY = 'cncq.seenUpdate';
+let updates = [];
+const thDate = (d) => new Date(`${d}T00:00:00`).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+
+function showUpdates(isNew) {
+  const dlg = $('#updateDialog');
+  if (!updates.length || typeof dlg.showModal !== 'function') return;
+  const [latest, ...older] = updates;
+  $('#updBadge').textContent = isNew ? `อัปเดตใหม่ · v${latest.version}` : `เวอร์ชันปัจจุบัน · v${latest.version}`;
+  $('#updTitle').textContent = latest.title;
+  $('#updDate').textContent = thDate(latest.date);
+  $('#updList').innerHTML = latest.items.map((t) => `<li>${esc(t)}</li>`).join('');
+  $('#updOlderWrap').hidden = !older.length;
+  $('#updOlder').innerHTML = older.map((u) => `<section><h3>v${esc(u.version)} · ${esc(u.title)}</h3><p class="muted">${thDate(u.date)}</p><ul>${u.items.map((t) => `<li>${esc(t)}</li>`).join('')}</ul></section>`).join('');
+  if (!dlg.open) dlg.showModal();
+}
+
+async function loadUpdates() {
+  try {
+    const res = await fetch(`updates.json?t=${Date.now()}`, { cache: 'no-store' });
+    if (!res.ok) return;
+    updates = await res.json();
+  } catch { return; }
+  if (!updates.length) return;
+  const latest = updates[0].version;
+  $('#footVer').textContent = `(v${latest})`;
+  let seen = null;
+  try { seen = localStorage.getItem(SEEN_UPDATE_KEY); } catch { /* storage blocked */ }
+  if (seen !== latest) showUpdates(true);
+}
+
+$('#updateDialog').addEventListener('close', () => {
+  if (updates.length) { try { localStorage.setItem(SEEN_UPDATE_KEY, updates[0].version); } catch { /* storage blocked */ } }
+});
+$('#updateDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); }); // click outside
+$('#whatsNewBtn').addEventListener('click', () => showUpdates(false));
+
+(async () => {
+  if (await reloadIfNewVersion()) return;
+  await loadUpdates();
 })();
 
 // exposed for debugging / automated checks
