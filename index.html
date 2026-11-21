@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Artron Academy · ใบเสนอราคา CNC</title>
   <link rel="icon" href="assets/artron-logo.png" />
-  <script src="theme.js?v=20261120225146"></script>
+  <script src="theme.js?v=20261121094251"></script>
   <meta name="description" content="อัปโหลดไฟล์ STEP, STL หรือ 3MF แล้วรับราคางาน CNC ทันทีเป็นเงินบาท" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <meta name="app-version" content="20261120225146" />
-  <link rel="stylesheet" href="styles.css?v=20261120225146" />
+  <meta name="app-version" content="20261121094251" />
+  <link rel="stylesheet" href="styles.css?v=20261121094251" />
   <script type="importmap">
   {
     "imports": {
@@ -48,7 +48,7 @@
     <div class="wrap hero-inner">
       <div>
         <h1>คำนวณราคางาน <span>CNC</span> ทันที</h1>
-        <p>อัปโหลดไฟล์ 3D เลือกวัสดุและการตกแต่งผิว แล้วรับราคาเป็นเงินบาท คำนวณจากน้ำหนักชิ้นงาน เวลาเครื่องจักร ค่าเครื่องจักร และค่าไฟฟ้า</p>
+        <p>อัปโหลดไฟล์ 3D เลือกวัสดุและการชุบแข็ง แล้วรับราคาเป็นเงินบาท คำนวณจากน้ำหนักชิ้นงาน เวลาเครื่องจักร ค่าเครื่องจักร และค่าไฟฟ้า</p>
       </div>
       <ol class="steps">
         <li><span>1</span>อัปโหลด STEP / STL / 3MF</li>
@@ -118,18 +118,19 @@
             </div>
           </div>
           <div class="field">
-            <label for="finish">การตกแต่งผิว</label>
-            <select id="finish"></select>
+            <label for="harden">การชุบแข็ง</label>
+            <select id="harden">
+              <option value="none">ไม่ชุบแข็ง</option>
+              <option value="yes">ชุบ</option>
+            </select>
           </div>
-          <div class="grid2">
-            <div class="field">
-              <label for="tolerance">ค่าพิกัดความเผื่อ</label>
-              <select id="tolerance"></select>
-            </div>
-            <div class="field">
-              <label for="lead">ระยะเวลาผลิต</label>
-              <select id="lead"></select>
-            </div>
+          <div class="field" id="hardenNoteField" hidden>
+            <label for="hardenNote">หมายเหตุการชุบ</label>
+            <textarea id="hardenNote" rows="2" maxlength="300" placeholder="เช่น ชุบแข็ง HRC 50–55, ชุบเฉพาะผิว, ชุบซิงค์"></textarea>
+          </div>
+          <div class="field">
+            <label for="tolerance">ค่าพิกัดความเผื่อ</label>
+            <select id="tolerance"></select>
           </div>
         </div>
 
@@ -210,6 +211,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js" defer></script>
-  <script type="module" src="app.js?v=20261120225146"></script>
+  <script type="module" src="app.js?v=20261121094251"></script>
 </body>
 </html>

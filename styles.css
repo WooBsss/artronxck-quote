@@ -77,6 +77,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body {
   margin: 0;
@@ -196,11 +197,12 @@ main { margin-top: -44px; display: grid; gap: 20px; padding-bottom: 30px; }
 .field label { font-size: .82rem; font-weight: 600; color: var(--ink-2); }
 .field small { font-size: .78rem; }
 .stat .v, .price-big, .price-mid, .breakdown td.n, .summary-table td.n, .rate b, .mat-table td.num input { font-family: var(--mono); font-variant-numeric: tabular-nums lining-nums; }
-select, input[type="number"], input[type="text"] {
+select, textarea, input[type="number"], input[type="text"] {
   font: inherit; font-size: .92rem; color: var(--ink); background: var(--surface); border: 1px solid var(--line);
   border-radius: 9px; padding: 8px 10px; width: 100%; min-width: 0;
 }
-select:focus, input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+select:focus, textarea:focus, input:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
 .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .qty { display: flex; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
 .qty input { border: 0; border-radius: 0; text-align: center; }

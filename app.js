@@ -42,33 +42,14 @@ const DEFAULT_MATERIALS = [
   { id: 'peek', name: 'PEEK', group: 'plastic', density: 1.31, price: 4800, mrr: 10, wear: 0.8, color: '#c9a77c' },
 ];
 
-// rate = ฿ per cm² of surface · min = minimum charge per batch · timeFactor = extra finishing passes
-const FINISHES = [
-  { id: 'asm', name: 'ผิวจากการกัด (Ra 3.2 µm)', rate: 0, min: 0, groups: 'all' },
-  { id: 'smooth', name: 'ผิวกัดละเอียด (Ra 1.6 µm)', rate: 0, min: 0, timeFactor: 1.4, groups: 'all' },
-  { id: 'bead', name: 'พ่นทราย (Bead blast)', rate: 0.06, min: 150, groups: ['aluminium', 'steel', 'stainless', 'copper', 'titanium'] },
-  { id: 'anoClear', name: 'อโนไดซ์สีใส (Type II)', rate: 0.12, min: 300, groups: ['aluminium'] },
-  { id: 'anoBlack', name: 'อโนไดซ์สีดำ (Type II)', rate: 0.15, min: 300, groups: ['aluminium'] },
-  { id: 'hardAno', name: 'ฮาร์ดอโนไดซ์ (Type III)', rate: 0.30, min: 600, groups: ['aluminium'] },
-  { id: 'zinc', name: 'ชุบซิงค์ (Zinc plating)', rate: 0.10, min: 300, groups: ['steel'] },
-  { id: 'blackOx', name: 'รมดำ (Black oxide)', rate: 0.08, min: 250, groups: ['steel'] },
-  { id: 'nickel', name: 'ชุบนิกเกิล (Electroless nickel)', rate: 0.25, min: 500, groups: ['aluminium', 'steel', 'copper'] },
-  { id: 'passiv', name: 'พาสซิเวชัน (Passivation)', rate: 0.06, min: 250, groups: ['stainless'] },
-  { id: 'powder', name: 'พ่นสีฝุ่น (Powder coat)', rate: 0.18, min: 400, groups: ['aluminium', 'steel', 'stainless'] },
-  { id: 'polish', name: 'ขัดเงา (Mirror polish)', rate: 0.40, min: 300, groups: ['aluminium', 'stainless', 'copper', 'plastic'] },
-];
+// การชุบแข็ง: priced from part weight with a minimum per batch (see shop parameters)
+const HARDEN_LABEL = { none: 'ไม่ชุบแข็ง', yes: 'ชุบ' };
 
 const TOLERANCES = [
   { id: 'std', name: 'มาตรฐาน ±0.10 mm', f: 1 },
   { id: 'fine', name: 'ละเอียด ±0.05 mm', f: 1.3 },
   { id: 'prec', name: 'แม่นยำสูง ±0.02 mm', f: 1.75 },
   { id: 'ultra', name: 'แม่นยำพิเศษ ±0.01 mm', f: 2.4 },
-];
-
-const LEADS = [
-  { id: 'eco', name: 'ประหยัด · 12–15 วันทำการ', f: 0.92 },
-  { id: 'std', name: 'มาตรฐาน · 7–10 วันทำการ', f: 1 },
-  { id: 'exp', name: 'ด่วน · 3–5 วันทำการ', f: 1.35 },
 ];
 
 const PARAM_GROUPS = [
@@ -97,6 +78,8 @@ const PARAM_GROUPS = [
     { key: 'overheadPct', label: 'ค่าโสหุ้ย (ค่าเช่า งานธุรการ)', unit: '%', def: 15, step: 1 },
     { key: 'profitPct', label: 'กำไร', unit: '%', def: 25, step: 1 },
     { key: 'minOrder', label: 'มูลค่าสั่งซื้อขั้นต่ำ', unit: '฿', def: 500, step: 50 },
+    { key: 'hardenRate', label: 'ค่าชุบแข็ง (ตามน้ำหนักชิ้นงาน)', unit: '฿/กก.', def: 60, step: 5 },
+    { key: 'hardenMin', label: 'ค่าชุบแข็งขั้นต่ำต่อล็อต', unit: '฿', def: 500, step: 50 },
     { key: 'vat', label: 'คิดภาษีมูลค่าเพิ่ม (VAT 7%)', type: 'toggle', def: true },
   ] },
 ];
@@ -113,16 +96,12 @@ const store = {
 let shop = { ...DEFAULT_SHOP, ...store.get('cncq.shop', {}) };
 const MAT_KEY = 'cncq.materials.th';
 let materials = store.get(MAT_KEY, null) || structuredClone(DEFAULT_MATERIALS);
-let leadId = 'std';
 const parts = [];
 let selectedId = null;
 let partSeq = 0;
 
 const matById = (id) => materials.find((m) => m.id === id) || materials[0];
-const finById = (id) => FINISHES.find((f) => f.id === id) || FINISHES[0];
 const tolById = (id) => TOLERANCES.find((t) => t.id === id) || TOLERANCES[0];
-const leadById = (id) => LEADS.find((l) => l.id === id) || LEADS[1];
-const finishAllowed = (fin, mat) => fin.groups === 'all' || fin.groups.includes(mat.group);
 
 /* ------------------------------------------------------------------ *
  *  Geometry analysis — volume, surface area, bounding box, watertight
@@ -272,7 +251,7 @@ async function handleFiles(fileList) {
       const ext = file.name.split('.').pop().toLowerCase();
       const part = {
         id: ++partSeq, name: file.name, ext, positions: pos, geo,
-        unitScale: 1, materialId: materials[0].id, finishId: 'asm', tolId: 'std', qty: 1,
+        unitScale: 1, materialId: materials[0].id, harden: 'none', hardenNote: '', tolId: 'std', qty: 1,
       };
       parts.push(part);
       selectPart(part.id);
@@ -296,9 +275,7 @@ function setStatus(html, isError = false) {
 function quote(part) {
   const S = shop;
   const m = matById(part.materialId);
-  const fin = finById(part.finishId);
   const tol = tolById(part.tolId);
-  const lead = leadById(leadId);
   const qty = Math.max(1, Math.floor(part.qty) || 1);
   const s = part.unitScale;
 
@@ -314,7 +291,7 @@ function quote(part) {
   // machining time estimate
   const roughMin = removedCm3 / Math.max(m.mrr, 0.01);
   const finishSpeed = S.finishRate * (m.mrr / 12);
-  const finishMin = (areaCm2 / Math.max(finishSpeed, 0.01)) * (fin.timeFactor || 1);
+  const finishMin = areaCm2 / Math.max(finishSpeed, 0.01);
   const cutMin = (roughMin + finishMin) * tol.f;
   const cycleMin = cutMin + S.handleMin;
 
@@ -333,21 +310,21 @@ function quote(part) {
   const setupHr = (S.setupMin + S.progMin) / 60;
   const setupBatch = setupHr * (machinePerHr + S.laborRate + S.auxKw * S.elecRate);
   const setup = setupBatch / qty;
-  const finishBatch = fin.rate > 0 ? Math.max(fin.rate * areaCm2 * qty, fin.min) : 0;
-  const finishing = finishBatch / qty;
+  const hardened = part.harden === 'yes';
+  const hardenBatch = hardened ? Math.max(S.hardenRate * partKg * qty, S.hardenMin) : 0;
+  const hardening = hardenBatch / qty;
 
-  const direct = material + machine + electricity + labor + tooling + setup + finishing;
+  const direct = material + machine + electricity + labor + tooling + setup + hardening;
   const overhead = (direct * S.overheadPct) / 100;
   const profit = ((direct + overhead) * S.profitPct) / 100;
-  const base = direct + overhead + profit;
-  const leadAdj = base * (lead.f - 1);
-  const unit = base + leadAdj;
+  const unit = direct + overhead + profit;
 
   return {
-    m, fin, tol, lead, qty, dims, volCm3, areaCm2, stockDims, stockKg, partKg, removedCm3,
+    m, tol, qty, dims, volCm3, areaCm2, stockDims, stockKg, partKg, removedCm3,
     roughMin, finishMin, cutMin, cycleMin, machinePerHr, kWh,
-    material, machine, electricity, labor, tooling, setup, setupBatch, finishing, finishBatch,
-    overhead, profit, leadAdj, unit, line: unit * qty,
+    material, machine, electricity, labor, tooling, setup, setupBatch,
+    hardened, hardening, hardenBatch, hardenNote: (part.hardenNote || '').trim(),
+    overhead, profit, unit, line: unit * qty,
   };
 }
 
@@ -484,9 +461,10 @@ function syncForm(part) {
   $('#unit').value = String(part.unitScale);
   $('#qty').value = part.qty;
   $('#tolerance').value = part.tolId;
-  $('#lead').value = leadId;
   $('#unit').disabled = /^(step|stp|igs|iges)$/.test(part.ext); // CAD files are converted to mm
-  renderFinishOptions(part);
+  $('#harden').value = part.harden;
+  $('#hardenNote').value = part.hardenNote;
+  $('#hardenNoteField').hidden = part.harden !== 'yes';
 }
 
 function renderMaterialOptions() {
@@ -496,14 +474,6 @@ function renderMaterialOptions() {
     if (!opts.length) return '';
     return `<optgroup label="${label}">${opts.map((m) => `<option value="${m.id}">${esc(m.name)} — ${baht(m.price)}/kg</option>`).join('')}</optgroup>`;
   }).join('');
-}
-
-function renderFinishOptions(part) {
-  const m = matById(part.materialId);
-  const allowed = FINISHES.filter((f) => finishAllowed(f, m));
-  if (!allowed.some((f) => f.id === part.finishId)) part.finishId = 'asm';
-  $('#finish').innerHTML = allowed.map((f) => `<option value="${f.id}">${esc(f.name)}${f.rate ? ` — ${baht(f.rate * 100)}/dm²` : ''}</option>`).join('');
-  $('#finish').value = part.finishId;
 }
 
 function refresh(refit = false) {
@@ -550,10 +520,14 @@ function refresh(refit = false) {
     row('ค่าสึกหรอทูล', `ตัวคูณการสึกหรอ ×${num(q.m.wear, 1)}`, q.tooling),
     row('ค่าตั้งเครื่องและเขียนโปรแกรม', `${baht(q.setupBatch)} ต่อล็อต ÷ ${q.qty} ชิ้น`, q.setup),
   ];
-  if (q.finishing) rows.push(row(`ตกแต่งผิว: ${esc(q.fin.name)}`, `${baht(q.finishBatch)} ต่อล็อต ÷ ${q.qty} ชิ้น`, q.finishing));
+  if (q.hardened) {
+    const how = q.hardenBatch > shop.hardenRate * q.partKg * q.qty + 1e-9
+      ? `ขั้นต่ำ ${baht(shop.hardenMin)} ต่อล็อต ÷ ${q.qty} ชิ้น`
+      : `${weight(q.partKg)} × ${baht(shop.hardenRate)}/กก.`;
+    rows.push(row('ค่าชุบแข็ง', `${how}${q.hardenNote ? ` · ${esc(q.hardenNote)}` : ''}`, q.hardening));
+  }
   rows.push(row(`ค่าโสหุ้ย ${num(shop.overheadPct, 0)}%`, '', q.overhead));
   rows.push(row(`กำไร ${num(shop.profitPct, 0)}%`, '', q.profit));
-  if (q.leadAdj) rows.push(row(`ระยะเวลาผลิต (${esc(q.lead.name.split(' ·')[0])})`, `×${num(q.lead.f)}`, q.leadAdj));
   rows.push(`<tr class="total"><td>ราคาต่อชิ้น (ไม่รวม VAT)</td><td class="n">${baht(q.unit)}</td></tr>`);
   $('#breakdown').innerHTML = rows.join('');
 
@@ -596,7 +570,7 @@ function renderSummary() {
   const t = orderTotals();
   const now = new Date();
   $('#quoteNo').textContent = QUOTE_NO;
-  $('#quoteMeta').textContent = `วันที่เสนอราคา ${now.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })} · ระยะเวลาผลิต: ${leadById(leadId).name} · สกุลเงิน: บาท (฿)`;
+  $('#quoteMeta').textContent = `วันที่เสนอราคา ${now.toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' })} · สกุลเงิน: บาท (฿)`;
   if (!t.lines.length) {
     $('#summaryTable').innerHTML = '<tbody><tr><td class="empty">อัปโหลดชิ้นงานเพื่อเริ่มทำใบเสนอราคา</td></tr></tbody>';
     return;
@@ -604,7 +578,7 @@ function renderSummary() {
   const body = t.lines.map(({ p, q }, i) => `<tr>
       <td class="s-idx">${i + 1}</td>
       <td class="s-part">${esc(p.name)}</td>
-      <td class="s-mat" data-label="วัสดุ / ตัวเลือก">${esc(q.m.name)}<br><span class="muted">${esc(q.fin.name)} · ${esc(q.tol.name)}</span></td>
+      <td class="s-mat" data-label="วัสดุ / ตัวเลือก">${esc(q.m.name)}<br><span class="muted">${q.hardened ? 'ชุบแข็ง' : 'ไม่ชุบแข็ง'} · ${esc(q.tol.name)}${q.hardened && q.hardenNote ? `<br>หมายเหตุการชุบ: ${esc(q.hardenNote)}` : ''}</span></td>
       <td class="n" data-label="น้ำหนัก">${weight(q.partKg)}</td>
       <td class="n" data-label="จำนวน">${q.qty}</td>
       <td class="n" data-label="ราคาต่อชิ้น">${baht(q.unit)}</td>
@@ -685,11 +659,15 @@ function bind() {
   $('#sampleBtn').addEventListener('click', () => handleFiles([sampleFile()]));
 
   const onPart = (fn) => (e) => { const p = selectedPart(); if (p) { fn(p, e); refresh(); } };
-  $('#material').addEventListener('change', onPart((p, e) => { p.materialId = e.target.value; renderFinishOptions(p); }));
+  $('#material').addEventListener('change', onPart((p, e) => { p.materialId = e.target.value; }));
   $('#unit').addEventListener('change', onPart((p, e) => { p.unitScale = Number(e.target.value); showPartIn3D(p, true); }));
-  $('#finish').addEventListener('change', onPart((p, e) => { p.finishId = e.target.value; }));
+  $('#harden').addEventListener('change', onPart((p, e) => {
+    p.harden = e.target.value;
+    $('#hardenNoteField').hidden = p.harden !== 'yes';
+    if (p.harden === 'yes') $('#hardenNote').focus();
+  }));
+  $('#hardenNote').addEventListener('input', onPart((p, e) => { p.hardenNote = e.target.value; }));
   $('#tolerance').addEventListener('change', onPart((p, e) => { p.tolId = e.target.value; }));
-  $('#lead').addEventListener('change', (e) => { leadId = e.target.value; refresh(); });
   $('#qty').addEventListener('input', onPart((p, e) => { const v = Math.floor(Number(e.target.value)); if (v >= 1) p.qty = Math.min(v, 100000); }));
   $('#qty').addEventListener('blur', () => { const p = selectedPart(); if (p) $('#qty').value = p.qty; });
   document.querySelectorAll('.qty button').forEach((b) => b.addEventListener('click', onPart((p) => {
@@ -773,7 +751,6 @@ function bind() {
 
 /* ------------------------------------------------------------------ */
 $('#tolerance').innerHTML = TOLERANCES.map((t) => `<option value="${t.id}">${t.name}</option>`).join('');
-$('#lead').innerHTML = LEADS.map((l) => `<option value="${l.id}">${l.name}${l.f !== 1 ? ` (×${l.f})` : ''}</option>`).join('');
 renderMaterialOptions();
 renderParams();
 renderMaterials();
