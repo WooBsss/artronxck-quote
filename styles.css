@@ -182,8 +182,8 @@ main { margin-top: -44px; display: grid; gap: 20px; padding-bottom: 30px; }
 .workspace { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(320px, 1fr); gap: 20px; align-items: start; }
 .viewer-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
 .viewer-head h2 { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
-.viewer-tools { display: flex; align-items: center; gap: 14px; font-size: .86rem; }
-.chk { display: flex; gap: 6px; align-items: center; cursor: pointer; }
+.viewer-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; font-size: .86rem; }
+.chk { display: flex; gap: 6px; align-items: center; cursor: pointer; white-space: nowrap; }
 .viewer { height: 440px; border-radius: 12px; background: var(--viewer-bg); overflow: hidden; position: relative; }
 .viewer canvas { display: block; width: 100% !important; height: 100% !important; }
 .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-top: 14px; }

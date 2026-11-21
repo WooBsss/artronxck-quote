@@ -5,13 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Artron Academy · ใบเสนอราคา CNC</title>
   <link rel="icon" href="assets/artron-logo.png" />
-  <script src="theme.js?v=20261121094251"></script>
+  <script src="theme.js?v=20261121095217"></script>
   <meta name="description" content="อัปโหลดไฟล์ STEP, STL หรือ 3MF แล้วรับราคางาน CNC ทันทีเป็นเงินบาท" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <meta name="app-version" content="20261121094251" />
-  <link rel="stylesheet" href="styles.css?v=20261121094251" />
+  <meta name="app-version" content="20261121095217" />
+  <link rel="stylesheet" href="styles.css?v=20261121095217" />
   <script type="importmap">
   {
     "imports": {
@@ -81,6 +81,7 @@
         <div class="viewer-head">
           <h2 id="partTitle">ชิ้นงาน</h2>
           <div class="viewer-tools">
+            <label class="chk" id="showColorsWrap" hidden title="แสดงสีตามที่กำหนดไว้ในไฟล์ (STEP / IGES / 3MF)"><input type="checkbox" id="showColors" checked /> สีจากไฟล์</label>
             <label class="chk"><input type="checkbox" id="showEdges" checked /> เส้นขอบ</label>
             <label class="chk"><input type="checkbox" id="showBox" /> กล่องวัตถุดิบ</label>
             <button class="btn small ghost" id="resetView" type="button">รีเซ็ตมุมมอง</button>
@@ -211,6 +212,6 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/occt-import-js@0.0.23/dist/occt-import-js.js" defer></script>
-  <script type="module" src="app.js?v=20261121094251"></script>
+  <script type="module" src="app.js?v=20261121095217"></script>
 </body>
 </html>

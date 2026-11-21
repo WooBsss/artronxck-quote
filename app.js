@@ -197,21 +197,68 @@ function getOcct() {
 }
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
+/* Appearance (colours) stored in the file, as one linear-RGB colour per vertex (same layout as positions).
+   Parts without colour fall back to this neutral grey when other parts of the same file are coloured. */
+const NO_COLOR = [0.62, 0.64, 0.67];
+
+function fillColor(out, from, to, rgb) {
+  for (let v = from; v < to; v++) { out[v * 3] = rgb[0]; out[v * 3 + 1] = rgb[1]; out[v * 3 + 2] = rgb[2]; }
+}
+
+/** Per-vertex colours for a three.js mesh from a 3MF file, or null when the mesh has no colour of its own. */
+function meshColors(mesh) {
+  const g = mesh.geometry;
+  const idx = g.index;
+  const count = idx ? idx.count : g.attributes.position.count;
+  const out = new Float32Array(count * 3);
+  const col = g.attributes.color;
+  if (col) {
+    for (let i = 0; i < count; i++) {
+      const vi = idx ? idx.getX(i) : i;
+      out[i * 3] = col.getX(vi); out[i * 3 + 1] = col.getY(vi); out[i * 3 + 2] = col.getZ(vi);
+    }
+    return out;
+  }
+  const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+  const named = mats.filter((m) => m && m.color && m.name); // 3MF base materials carry a name
+  if (!named.length) return null;
+  if (Array.isArray(mesh.material) && g.groups.length) {
+    fillColor(out, 0, count, NO_COLOR);
+    for (const gr of g.groups) {
+      const m = mesh.material[gr.materialIndex];
+      if (m && m.color) fillColor(out, gr.start, Math.min(gr.start + gr.count, count), [m.color.r, m.color.g, m.color.b]);
+    }
+  } else {
+    const c = named[0].color;
+    fillColor(out, 0, count, [c.r, c.g, c.b]);
+  }
+  return out;
+}
+
+/** Returns { pos, colors } — colors is null when the file has no appearance information. */
 async function parseFile(file) {
   const ext = file.name.split('.').pop().toLowerCase();
   const buf = await file.arrayBuffer();
   if (ext === 'stl') {
     const g = new STLLoader().parse(buf);
-    return geometryToPositions(g);
+    return { pos: geometryToPositions(g), colors: null };
   }
   if (ext === '3mf') {
     const group = new ThreeMFLoader().parse(buf);
     group.position.set(0, 0, 0); group.rotation.set(0, 0, 0); group.scale.set(1, 1, 1);
     group.updateMatrixWorld(true);
-    const arrays = [];
-    group.traverse((o) => { if (o.isMesh) arrays.push(geometryToPositions(o.geometry, o.matrixWorld)); });
+    const arrays = [], colorArrays = [];
+    let hasColor = false;
+    group.traverse((o) => {
+      if (!o.isMesh) return;
+      const p = geometryToPositions(o.geometry, o.matrixWorld);
+      arrays.push(p);
+      let c = meshColors(o);
+      if (c) hasColor = true; else { c = new Float32Array(p.length); fillColor(c, 0, p.length / 3, NO_COLOR); }
+      colorArrays.push(c);
+    });
     if (!arrays.length) throw new Error('ไม่พบชิ้นงานในไฟล์ 3MF');
-    return concat(arrays);
+    return { pos: concat(arrays), colors: hasColor ? concat(colorArrays) : null };
   }
   if (['step', 'stp', 'igs', 'iges'].includes(ext)) {
     const occt = await getOcct();
@@ -219,16 +266,28 @@ async function parseFile(file) {
     const data = new Uint8Array(buf);
     const res = ext === 'step' || ext === 'stp' ? occt.ReadStepFile(data, params) : occt.ReadIgesFile(data, params);
     if (!res || !res.success || !res.meshes.length) throw new Error('ไม่สามารถอ่านรูปทรงโซลิดจากไฟล์ CAD นี้ได้');
-    const arrays = res.meshes.map((m) => {
+    let hasColor = false;
+    const arrays = [], colorArrays = [];
+    for (const m of res.meshes) {
       const p = m.attributes.position.array;
       const ix = m.index.array;
       const out = new Float32Array(ix.length * 3);
       for (let i = 0; i < ix.length; i++) {
         out[i * 3] = p[ix[i] * 3]; out[i * 3 + 1] = p[ix[i] * 3 + 1]; out[i * 3 + 2] = p[ix[i] * 3 + 2];
       }
-      return out;
-    });
-    return concat(arrays);
+      arrays.push(out);
+      // colour of the whole solid, then per-face overrides (first/last are triangle indices, inclusive)
+      const col = new Float32Array(out.length);
+      if (m.color) hasColor = true;
+      fillColor(col, 0, ix.length, m.color || NO_COLOR);
+      for (const f of m.brep_faces || []) {
+        if (!f.color) continue;
+        hasColor = true;
+        fillColor(col, f.first * 3, Math.min((f.last + 1) * 3, ix.length), f.color);
+      }
+      colorArrays.push(col);
+    }
+    return { pos: concat(arrays), colors: hasColor ? concat(colorArrays) : null };
   }
   throw new Error(`ไม่รองรับไฟล์ ".${ext}" กรุณาใช้ STEP, STL, 3MF หรือ IGES`);
 }
@@ -241,7 +300,7 @@ async function handleFiles(fileList) {
     setStatus(`<span class="spinner"></span>กำลังอ่าน ${esc(file.name)}${isCad && !occtPromise ? ' (กำลังโหลดตัวอ่านไฟล์ STEP…)' : '…'}`);
     await sleep(30); // let the spinner paint before heavy work
     try {
-      const pos = await parseFile(file);
+      const { pos, colors } = await parseFile(file);
       if (!pos.length) throw new Error('ไฟล์นี้ไม่มีข้อมูลรูปทรง');
       const geo = analyze(pos);
       if (geo.volume <= 0) throw new Error('คำนวณปริมาตรไม่ได้ — ชิ้นงานเป็นโซลิดปิดหรือไม่?');
@@ -250,7 +309,7 @@ async function handleFiles(fileList) {
       for (let i = 0; i < pos.length; i += 3) { pos[i] -= cx; pos[i + 1] -= cy; pos[i + 2] -= mz; }
       const ext = file.name.split('.').pop().toLowerCase();
       const part = {
-        id: ++partSeq, name: file.name, ext, positions: pos, geo,
+        id: ++partSeq, name: file.name, ext, positions: pos, colors, geo,
         unitScale: 1, materialId: materials[0].id, harden: 'none', hardenNote: '', tolId: 'std', qty: 1,
       };
       parts.push(part);
@@ -376,6 +435,7 @@ function showPartIn3D(part, refit) {
     disposeObj(partMesh); disposeObj(edgeLines);
     const geom = new THREE.BufferGeometry();
     geom.setAttribute('position', new THREE.BufferAttribute(part.positions, 3));
+    if (part.colors) geom.setAttribute('color', new THREE.BufferAttribute(part.colors, 3));
     geom.computeVertexNormals();
     partMesh = new THREE.Mesh(geom, new THREE.MeshStandardMaterial({ color: q.m.color, metalness: 0.25, roughness: 0.5, side: THREE.DoubleSide }));
     partMesh.userData.partId = part.id;
@@ -387,7 +447,14 @@ function showPartIn3D(part, refit) {
     }
     refit = true;
   }
-  partMesh.material.color.set(q.m.color);
+  // appearance from the file (STEP / IGES / 3MF colours) or the chosen material's colour
+  const useFileColors = !!part.colors && $('#showColors').checked;
+  $('#showColorsWrap').hidden = !part.colors;
+  if (partMesh.material.vertexColors !== useFileColors) {
+    partMesh.material.vertexColors = useFileColors;
+    partMesh.material.needsUpdate = true;
+  }
+  partMesh.material.color.set(useFileColors ? 0xffffff : q.m.color);
   partMesh.scale.setScalar(part.unitScale);
   if (edgeLines) edgeLines.visible = $('#showEdges').checked;
 
@@ -692,6 +759,7 @@ function bind() {
   });
 
   $('#showEdges').addEventListener('change', (e) => { if (edgeLines) edgeLines.visible = e.target.checked; });
+  $('#showColors').addEventListener('change', () => { const p = selectedPart(); if (p) showPartIn3D(p, false); });
   $('#showBox').addEventListener('change', (e) => { if (stockBox) stockBox.visible = e.target.checked; });
   $('#resetView').addEventListener('click', () => { const p = selectedPart(); if (p) fitCamera(quote(p).dims); });
 
