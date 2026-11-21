@@ -47,6 +47,7 @@ Then open http://localhost:8080. Any static host (GitHub Pages, Netlify, …) al
 | `serve.ps1` | Tiny local web server |
 | `open-website.ps1` | Desktop-shortcut launcher (start server + open browser) |
 | `backup.ps1` | Commit and push all changes to GitHub |
-| `assets/app.ico` | Shortcut icon |
+| `assets/ckplus-icon.ico` | Desktop shortcut icon (16–256 px) |
+| `assets/icon-256.png` | Browser tab and "What's new" icon |
 | `assets/ckplus-logo.png` | Logo (light mode, print) |
 | `assets/ckplus-logo-dark.png` | Logo with white lettering (dark mode) |
