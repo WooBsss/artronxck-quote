@@ -6,7 +6,7 @@
   const KEY = 'cncq.theme';
   const root = document.documentElement;
   const media = window.matchMedia('(prefers-color-scheme: dark)');
-  const BG = { light: '#f3f7f8', dark: '#050607' };
+  const BG = { light: '#f5f5f6', dark: '#09090a' };
   let busy = false;
 
   const stored = () => { try { return localStorage.getItem(KEY); } catch { return null; } };

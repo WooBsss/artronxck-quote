@@ -48,4 +48,5 @@ Then open http://localhost:8080. Any static host (GitHub Pages, Netlify, …) al
 | `open-website.ps1` | Desktop-shortcut launcher (start server + open browser) |
 | `backup.ps1` | Commit and push all changes to GitHub |
 | `assets/app.ico` | Shortcut icon |
-| `assets/artron-logo.png` | Logo |
+| `assets/ckplus-logo.png` | Logo (light mode, print) |
+| `assets/ckplus-logo-dark.png` | Logo with white lettering (dark mode) |

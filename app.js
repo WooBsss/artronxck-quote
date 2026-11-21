@@ -565,7 +565,7 @@ function showPartIn3D(part, refit) {
   disposeObj(stockBox);
   const [sx, sy, sz] = q.stockDims;
   const boxGeom = new THREE.EdgesGeometry(new THREE.BoxGeometry(sx, sy, sz));
-  stockBox = new THREE.LineSegments(boxGeom, new THREE.LineBasicMaterial({ color: 0x22dddc }));
+  stockBox = new THREE.LineSegments(boxGeom, new THREE.LineBasicMaterial({ color: 0xe3141c }));
   stockBox.position.set(0, 0, q.dims[2] / 2);
   stockBox.visible = $('#showBox').checked;
   root.add(stockBox);
