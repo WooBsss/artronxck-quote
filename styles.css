@@ -327,6 +327,7 @@ textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
 .rate b { font-family: var(--mono); }
 
 /* Tables */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
 .table-scroll { overflow-x: auto; }
 .mat-table, .summary-table { width: 100%; border-collapse: collapse; font-size: .88rem; }
 .mat-table th, .summary-table th { text-align: left; font-size: .76rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; padding: 8px 8px; border-bottom: 1px solid var(--line); white-space: nowrap; }
@@ -523,6 +524,20 @@ textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
   .update-dialog, .theme-switch, .theme-ring, .topbar, .hero, .upload-card, .parts-strip, .workspace, #shop, #materials, .footer, #printBtn, #shareBtn, .lang-switch { display: none !important; }
   body { background: #fff; color: #000; }
   main { margin: 0; }
+  /* quote table must fit the paper: no scroll box (it clips when printed), fixed column
+     shares, smaller type, long text wraps instead of pushing the amount column off the page */
+  .table-scroll { overflow: visible !important; }
+  .summary-table { table-layout: fixed; font-size: 9pt; }
+  .summary-table th { font-size: 7.5pt; letter-spacing: 0; white-space: normal; padding: 6px 4px; }
+  .summary-table td { padding: 5px 4px; overflow-wrap: anywhere; }
+  .summary-table thead th:nth-child(1) { width: 4%; }
+  .summary-table thead th:nth-child(2) { width: 21%; }
+  .summary-table thead th:nth-child(3) { width: 24%; }
+  .summary-table thead th:nth-child(4) { width: 11%; }
+  .summary-table thead th:nth-child(5) { width: 8%; }
+  .summary-table thead th:nth-child(6) { width: 15%; }
+  .summary-table thead th:nth-child(7) { width: 17%; }
+  .summary-table tfoot tr.grand td { font-size: 11pt; }
   .card { box-shadow: none; border: 0; }
 }
 .share-out { display: block; width: 100%; margin-top: 6px; font-size: .78rem; }
