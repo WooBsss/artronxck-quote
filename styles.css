@@ -512,8 +512,10 @@ textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
     -webkit-print-color-adjust: exact; print-color-adjust: exact;
   }
   .print-head img { height: 64px; width: auto; }
-  .print-head .logo-light { display: block !important; }
-  .print-head .logo-dark { display: none !important; }
+  /* paper is always white: force the light logo, even when the phone/site is in dark mode
+     (needs to out-rank the :root[data-theme] / :root:not([data-theme]) logo swap rules) */
+  html:root .print-head .logo-light { display: block !important; }
+  html:root .print-head .logo-dark { display: none !important; }
   .print-doc { display: flex; flex-direction: column; align-items: flex-end; line-height: 1.3; }
   .print-doc strong { font-size: 1.3rem; }
   .print-doc span { font-size: .78rem; color: #555; letter-spacing: .06em; }
