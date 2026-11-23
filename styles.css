@@ -412,13 +412,13 @@ textarea { resize: vertical; min-height: 64px; line-height: 1.5; }
 .upd-older h3 { font-size: .9rem; margin: 0; }
 .upd-older p { margin: 2px 0 4px; font-size: .78rem; }
 .upd-older ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: var(--ink-2); }
-.upd-actions { display: flex; justify-content: flex-end; padding: 16px 20px 20px; margin: 0; }
-.upd-actions .btn { min-width: 120px; position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 6px; transition: transform .15s ease, background-color .2s ease; }
+.upd-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 16px 20px 20px; margin: 0; }
+.upd-actions .btn { min-width: 120px; position: relative; display: inline-flex; align-items: center; justify-content: center; transition: transform .15s ease, background-color .2s ease; }
 .upd-actions .btn:active { transform: scale(.95); }
 /* accept: check mark pops in, ripple ring bursts out of the button */
-.upd-actions .btn::before { content: '✓'; display: inline-block; width: 0; opacity: 0; transform: scale(0) rotate(-45deg); font-weight: 800; }
+.upd-actions .btn::before { content: '✓'; display: inline-block; width: 0; opacity: 0; transform: scale(0) rotate(-45deg); font-weight: 800; overflow: hidden; }
 .upd-actions .btn.is-accepted { animation: upd-press .42s cubic-bezier(.3, 1.6, .5, 1); }
-.upd-actions .btn.is-accepted::before { width: 1em; opacity: 1; transform: none; transition: width .2s ease, opacity .2s ease, transform .35s cubic-bezier(.3, 1.8, .5, 1); }
+.upd-actions .btn.is-accepted::before { width: 1em; margin-right: 6px; opacity: 1; transform: none; transition: width .2s ease, opacity .2s ease, transform .35s cubic-bezier(.3, 1.8, .5, 1); }
 .upd-actions .btn.is-accepted::after { content: ''; position: absolute; inset: 0; border-radius: inherit; border: 2px solid var(--accent); animation: upd-ripple .5s ease-out forwards; pointer-events: none; }
 @keyframes upd-press { 0% { transform: scale(1); } 35% { transform: scale(.92); } 100% { transform: scale(1); } }
 @keyframes upd-ripple { from { opacity: .9; transform: scale(1); } to { opacity: 0; transform: scale(1.35, 1.8); } }

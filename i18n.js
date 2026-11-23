@@ -74,6 +74,7 @@
     'มีอะไรใหม่': "What's new",
     'การอัปเดตก่อนหน้า': 'Earlier updates',
     'รับทราบ': 'Got it',
+    'ไม่ต้องแสดง 1 ชั่วโมง': 'Hide for 1 hour',
     'ราคาทั้งหมดเป็นสกุลเงินบาท (฿ THB) ·': 'All prices in Thai Baht (฿ THB) ·',
     'เวลาการกัดประเมินจากปริมาตรเนื้อวัสดุที่ถูกกัดออกและพื้นที่ผิว ไม่ใช่การจำลอง CAM':
       'Machining time is estimated from removed volume and surface area; it is not a CAM simulation.',

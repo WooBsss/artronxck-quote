@@ -1176,9 +1176,12 @@ async function reloadIfNewVersion() {
 }
 
 /* ------------------------------------------------------------------ *
- *  "มีอะไรใหม่" announcement — shown once after every new version (updates.json, newest first)
+ *  "มีอะไรใหม่" announcement — shown every time the page opens (updates.json, newest first),
+ *  unless the visitor pressed "hide for 1 hour". A new version always shows, even while hidden.
  * ------------------------------------------------------------------ */
-const SEEN_UPDATE_KEY = 'cncq.seenUpdate';
+const SEEN_UPDATE_KEY = 'cncq.seenUpdate'; // last version seen: badge says "new" vs "current"
+const SNOOZE_KEY = 'cncq.updSnooze';       // { version, until } set by "hide for 1 hour"
+const SNOOZE_MS = 60 * 60 * 1000;
 let updates = [];
 const updDate = (d) => fmtDate(new Date(`${d}T00:00:00`));
 // English text comes from title_en / items_en when present
@@ -1215,9 +1218,13 @@ async function loadUpdates() {
   if (!updates.length) return;
   const latest = updates[0].version;
   $('#footVer').textContent = `(v${latest})`;
-  let seen = null;
-  try { seen = localStorage.getItem(SEEN_UPDATE_KEY); } catch { /* storage blocked */ }
-  if (seen !== latest) showUpdates(true);
+  let seen = null, snooze = null;
+  try {
+    seen = localStorage.getItem(SEEN_UPDATE_KEY);
+    snooze = JSON.parse(localStorage.getItem(SNOOZE_KEY) || 'null');
+  } catch { /* storage blocked or bad JSON */ }
+  const snoozed = snooze && snooze.version === latest && Date.now() < Number(snooze.until);
+  if (!snoozed) showUpdates(seen !== latest);
 }
 
 $('#updateDialog').addEventListener('close', () => {
@@ -1226,12 +1233,15 @@ $('#updateDialog').addEventListener('close', () => {
 // Animated dismiss: "accept" pops a check mark on the button, then the dialog shrinks away
 const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 let updClosing = false;
-function closeUpdates({ accepted = false } = {}) {
+function closeUpdates({ accepted = false, snooze = false } = {}) {
   const dlg = $('#updateDialog');
   if (!dlg.open || updClosing) return;
+  if (snooze && updates.length) {
+    try { localStorage.setItem(SNOOZE_KEY, JSON.stringify({ version: updates[0].version, until: Date.now() + SNOOZE_MS })); } catch { /* storage blocked */ }
+  }
   if (reduceMotion()) { dlg.close(accepted ? 'ok' : ''); return; }
   updClosing = true;
-  const btn = dlg.querySelector('.upd-actions .btn');
+  const btn = dlg.querySelector('.upd-actions .btn[value="ok"]');
   const finish = () => {
     if (!updClosing) return;
     updClosing = false;
@@ -1241,12 +1251,18 @@ function closeUpdates({ accepted = false } = {}) {
   };
   const leave = () => {
     dlg.classList.add('is-closing');
-    dlg.addEventListener('animationend', (e) => { if (e.target === dlg) finish(); }, { once: true });
+    // the button's ripple also fires animationend (it bubbles), so wait for the dialog's own
+    const onEnd = (e) => { if (e.target === dlg) { dlg.removeEventListener('animationend', onEnd); finish(); } };
+    dlg.addEventListener('animationend', onEnd);
     setTimeout(finish, 600); // fallback if animationend never fires
   };
   if (accepted) { btn.classList.add('is-accepted'); setTimeout(leave, 420); } else leave();
 }
-$('#updateDialog').addEventListener('submit', (e) => { e.preventDefault(); closeUpdates({ accepted: true }); });
+$('#updateDialog').addEventListener('submit', (e) => {
+  e.preventDefault();
+  if (e.submitter?.value === 'snooze') closeUpdates({ snooze: true });
+  else closeUpdates({ accepted: true });
+});
 $('#updateDialog').addEventListener('cancel', (e) => { e.preventDefault(); closeUpdates(); }); // Esc
 $('#updateDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeUpdates(); }); // click outside
 $('#whatsNewBtn').addEventListener('click', () => showUpdates(false));
