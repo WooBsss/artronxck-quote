@@ -1193,6 +1193,7 @@ function showUpdates(isNew) {
   const dlg = $('#updateDialog');
   if (!updates.length || typeof dlg.showModal !== 'function') return;
   updatesShownAsNew = isNew;
+  $('#updSnooze').checked = false;
   renderUpdates();
   if (!dlg.open) dlg.showModal();
 }
@@ -1260,8 +1261,7 @@ function closeUpdates({ accepted = false, snooze = false } = {}) {
 }
 $('#updateDialog').addEventListener('submit', (e) => {
   e.preventDefault();
-  if (e.submitter?.value === 'snooze') closeUpdates({ snooze: true });
-  else closeUpdates({ accepted: true });
+  closeUpdates({ accepted: true, snooze: $('#updSnooze').checked });
 });
 $('#updateDialog').addEventListener('cancel', (e) => { e.preventDefault(); closeUpdates(); }); // Esc
 $('#updateDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeUpdates(); }); // click outside
