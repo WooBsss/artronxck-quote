@@ -1223,7 +1223,32 @@ async function loadUpdates() {
 $('#updateDialog').addEventListener('close', () => {
   if (updates.length) { try { localStorage.setItem(SEEN_UPDATE_KEY, updates[0].version); } catch { /* storage blocked */ } }
 });
-$('#updateDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) e.currentTarget.close(); }); // click outside
+// Animated dismiss: "accept" pops a check mark on the button, then the dialog shrinks away
+const reduceMotion = () => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+let updClosing = false;
+function closeUpdates({ accepted = false } = {}) {
+  const dlg = $('#updateDialog');
+  if (!dlg.open || updClosing) return;
+  if (reduceMotion()) { dlg.close(accepted ? 'ok' : ''); return; }
+  updClosing = true;
+  const btn = dlg.querySelector('.upd-actions .btn');
+  const finish = () => {
+    if (!updClosing) return;
+    updClosing = false;
+    dlg.close(accepted ? 'ok' : '');
+    dlg.classList.remove('is-closing');
+    btn.classList.remove('is-accepted');
+  };
+  const leave = () => {
+    dlg.classList.add('is-closing');
+    dlg.addEventListener('animationend', (e) => { if (e.target === dlg) finish(); }, { once: true });
+    setTimeout(finish, 600); // fallback if animationend never fires
+  };
+  if (accepted) { btn.classList.add('is-accepted'); setTimeout(leave, 420); } else leave();
+}
+$('#updateDialog').addEventListener('submit', (e) => { e.preventDefault(); closeUpdates({ accepted: true }); });
+$('#updateDialog').addEventListener('cancel', (e) => { e.preventDefault(); closeUpdates(); }); // Esc
+$('#updateDialog').addEventListener('click', (e) => { if (e.target === e.currentTarget) closeUpdates(); }); // click outside
 $('#whatsNewBtn').addEventListener('click', () => showUpdates(false));
 
 (async () => {
